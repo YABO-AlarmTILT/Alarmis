@@ -1,0 +1,12 @@
+  [
+	{
+		"service": "ALARMIS",
+		"account": "8034",
+		"accountAT": "tdevgea@test.fr",
+		"pwdAT": "tdevgeapw",
+		"priority": 1,
+		"active": true,
+		"stage": null
+	}
+]
+
