@@ -34,7 +34,7 @@ import com.google.gson.JsonParser;
  */
 @Service
 public class LoadConfiguration {
-	
+	/**
 	// Logger
 		private final Logger logger = LoggerFactory.getLogger(this.getClass());
 		
@@ -98,4 +98,6 @@ public class LoadConfiguration {
 		headers.setAccept(Arrays.asList(mediaType));
 		return headers;
 	}
+	
+	
 }
