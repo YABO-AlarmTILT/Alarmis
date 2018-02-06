@@ -13,14 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import net.alarmtilt.cle.alarmis.configuration.LoadConfiguration;
+import net.alarmtilt.cle.alarmis.configuration.LoadConfigurationImpl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { AppConfig.class })
 public class LoadConfigurationTest {
 
 	@Autowired
-	LoadConfiguration loadConfiguration;
+	LoadConfigurationImpl loadConfiguration;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {

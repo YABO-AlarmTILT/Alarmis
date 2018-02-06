@@ -9,6 +9,16 @@ import net.alarmtilt.cle.alarmis.connection.TCPserver;
 @SpringBootApplication
 public class AlarmisApplication {
 
+//	@Bean
+//	public LoadConfiguration loadConfiguration() {
+//		return new LoadConfiguration();
+//	}
+
+//	@Bean
+//	public RestTemplate restTemplate() {
+//		return new RestTemplate();
+//	}
+
 	public static void main(String[] args) {
 		ConfigurableApplicationContext context = SpringApplication.run(AlarmisApplication.class, args);
 		TCPserver tcpServer = context.getBean(TCPserver.class);
