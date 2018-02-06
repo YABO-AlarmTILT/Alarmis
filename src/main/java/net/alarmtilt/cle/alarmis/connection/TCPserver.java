@@ -1,19 +1,11 @@
 package net.alarmtilt.cle.alarmis.connection;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +27,9 @@ public class TCPserver {
 	BuildObjetMessageFactoryService buildObjetMessageFactoryService;
 	@Autowired
 	AlarmisEventApiController alarmisEventApiController;
+	/**
+	 * 
+	 */
 	@Autowired
 	private LoaderConfigurationService loaderConfigurationService;
 
@@ -44,7 +39,7 @@ public class TCPserver {
 		try {
 			int serverPort = loaderConfigurationService != null
 					? loaderConfigurationService.getConfigOfService().getPortService() : port;
-			ServerSocket listenSocket = new ServerSocket(serverPort);
+			ServerSocket listenSocket = new ServerSocket(30000);
 			log.info("server start listening ... ... ... In port " + serverPort);
 
 			while (true) {
@@ -89,7 +84,7 @@ class Connection extends Thread {
 			// read data from client
 			BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 			// write to client
-			PrintWriter pw = new PrintWriter(clientSocket.getOutputStream());
+			PrintWriter pw = new PrintWriter(clientSocket.getOutputStream(), true);
 			String IP = clientSocket.getRemoteSocketAddress().toString();
 
 			log.info("Connexion from IP : " + IP);
@@ -115,25 +110,23 @@ class Connection extends Thread {
 
 				if (alertMessage != null) {
 
-					// Initializing request content
-					byte[] request = alertMessage.getResponseMessage().getBytes(StandardCharsets.UTF_8);
-
-					byte[] header = new byte[5];
-					ByteBuffer buf = ByteBuffer.wrap(header, 1, 4);
-					buf.order(ByteOrder.LITTLE_ENDIAN);
-
-					// Initializing request header
-					header[0] = (byte) 0xF0;
-					buf.putInt(request.length);
-					System.out.println("Sending request to Socket Server");
-					// Sending request
-					pw.println(header + "\n");
-					pw.println(request);
+					String response = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><response result=\"accept\"/>\n";
+					String responseLength = "Data-Length: " + response.length()+"\n";
+					pw.print(responseLength);
+					pw.print("\n");
+					pw.print(response);
 					pw.flush();
 
+					System.out.println("Sending request to Socket Server");
+					// Sending request
+					// pw.println(response1);
+					// pw.print(response);
+
+					// pw.close();
+					// clientSocket.close();
 					log.info("Message sended to client .... " + alertMessage.getResponseMessage());
 
-					alarmisEventApiController.launchAlert(alertMessage);
+					// alarmisEventApiController.launchAlert(alertMessage);
 				}
 				// Files.write(Paths.get("C:/Users/Yaakoub/test.txt"),
 				// sb.toString().getBytes());
@@ -149,8 +142,8 @@ class Connection extends Thread {
 
 		finally {
 			try {
-//				br.close();
-//				pw.close();
+				// br.close();
+				// pw.close();
 				clientSocket.close();
 			} catch (IOException e) {
 				/* close failed */}
