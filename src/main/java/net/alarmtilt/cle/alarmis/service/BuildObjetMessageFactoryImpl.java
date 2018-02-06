@@ -33,8 +33,7 @@ import net.alarmtilt.cle.alarmis.model.GenericAlert;
 
 @Service
 public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactoryService {
-	
-	
+
 	private static final Logger log = LoggerFactory.getLogger(AlarmisEventApiController.class);
 	private static String FILE_PATH = "FilesMsg\\alarmisMsg";
 	private static String FILE_EXTENSION = "xml";
@@ -47,47 +46,61 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 	 * @throws IOException
 	 */
 	@Override
-	public AlertMessage parseXMLFile(String xmlStr) throws ParserConfigurationException, SAXException, IOException {
+	public AlertMessage parseXMLFile(String xmlStr)   {
 
 		AlertMessage alertMessage = new AlertMessage();
 		GenericAlert genericAlert = new GenericAlert();
 		//
 		File fXmlFile = convertStringToDocument(xmlStr);
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-		Document doc = dBuilder.parse(fXmlFile);
+		DocumentBuilder dBuilder;
+		try {
+			dBuilder = dbFactory.newDocumentBuilder();
 
-		doc.getDocumentElement().normalize();
+			Document doc;
 
-		NodeList nList = doc.getElementsByTagName("message");
+			doc = dBuilder.parse(fXmlFile);
 
-		for (int temp = 0; temp < nList.getLength(); temp++) {
+			doc.getDocumentElement().normalize();
 
-			Node nNode = nList.item(temp);
+			NodeList nList = doc.getElementsByTagName("message");
 
-			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+			for (int temp = 0; temp < nList.getLength(); temp++) {
 
-				Element eElement = (Element) nNode;
+				Node nNode = nList.item(temp);
 
-				alertMessage.setPwd(eElement.getAttribute("pwd"));
+				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 
-				alertMessage.setSid(eElement.getAttribute("sid"));
-				alertMessage.setUid(eElement.getAttribute("uid"));
-				alertMessage.setName(eElement.getAttribute("name"));
-				alertMessage.setDestination(eElement.getAttribute("destination"));
+					Element eElement = (Element) nNode;
 
-				genericAlert.setAccount(Integer.parseInt(eElement.getElementsByTagName("generic_alert").item(0)
-						.getAttributes().getNamedItem("account").getNodeValue()));
-				genericAlert.setZone(eElement.getElementsByTagName("generic_alert").item(0).getAttributes()
-						.getNamedItem("zone").getNodeValue());
+					alertMessage.setPwd(eElement.getAttribute("pwd"));
 
-				genericAlert.setEvent(eElement.getElementsByTagName("generic_alert").item(0).getAttributes()
-						.getNamedItem("event").getNodeValue());
-				alertMessage.setGenericAlert(genericAlert);
+					alertMessage.setSid(eElement.getAttribute("sid"));
+					alertMessage.setUid(eElement.getAttribute("uid"));
+					alertMessage.setName(eElement.getAttribute("name"));
+					alertMessage.setDestination(eElement.getAttribute("destination"));
 
+					genericAlert.setAccount(Integer.parseInt(eElement.getElementsByTagName("generic_alert").item(0)
+							.getAttributes().getNamedItem("account").getNodeValue()));
+					
+					
+					genericAlert.setZone(eElement.getElementsByTagName("generic_alert").item(0).getAttributes()
+							.getNamedItem("zone").getNodeValue());
+					genericAlert.setEvent(eElement.getElementsByTagName("generic_alert").item(0).getAttributes()
+							.getNamedItem("event").getNodeValue());
+					alertMessage.setGenericAlert(genericAlert);
+					alertMessage.setResponseMessage("<response result=\"accept\" />");
+
+				}
 			}
+			return alertMessage;
+		} catch (ParserConfigurationException | IOException | SAXException e) {
+			log.info("ERROR : " + e);
+			alertMessage.setResponseMessage("<response result=\"error\" />");
+			e.printStackTrace();
+			return alertMessage;
 		}
-		return alertMessage;
+
 	}
 
 	private static File convertStringToDocument(String xmlStr) {
@@ -110,14 +123,15 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 
 			return file;
 		} catch (Exception e) {
-			log.error("error : "+e);
+			log.error("error : " + e);
 			return null;
 		}
 
 	}
 
 	/**
-	 * generate the file name with  yyyyMMddhhmmss format
+	 * generate the file name with yyyyMMddhhmmss format
+	 * 
 	 * @return
 	 */
 	private static String generateFileName() {

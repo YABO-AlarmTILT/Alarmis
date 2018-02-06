@@ -1,7 +1,7 @@
   [
 	{
-		"service": "ALARMISS",
-		"portService": 20000,
+		"service": "ALARMIS",
+		"portService": 30000,
 		"ipService": "127.0.0.1",
 		"account": "8034",
 		"accountAT": "tdevgea@test.fr",
