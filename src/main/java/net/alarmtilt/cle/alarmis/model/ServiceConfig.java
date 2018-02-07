@@ -3,97 +3,61 @@ package net.alarmtilt.cle.alarmis.model;
 public class ServiceConfig {
 
 	String service;
-	String account;
-	String accountAT;
-	String pwdAT;
-	String priority;
-	String active;
-	String stage;
+	Integer portService;
 	String ipService;
-	int portService;
-	
-	
-
-
-	public String getIpService() {
-		return ipService;
-	}
-
-	public void setIpService(String ipService) {
-		this.ipService = ipService;
-	}
-
-	public int getPortService() {
-		return portService;
-	}
-
-	public void setPortService(int portService) {
-		this.portService = portService;
-	}
-
+	CredentialClient credentialClient;
+	Integer priority;
+	Boolean active;
+	String stage;
 	public String getService() {
 		return service;
 	}
-
 	public void setService(String service) {
 		this.service = service;
 	}
-
-	public String getAccount() {
-		return account;
+	public Integer getPortService() {
+		return portService;
 	}
-
-	public void setAccount(String account) {
-		this.account = account;
+	public void setPortService(Integer portService) {
+		this.portService = portService;
 	}
-
-	public String getAccountAT() {
-		return accountAT;
+	public String getIpService() {
+		return ipService;
 	}
-
-	public void setAccountAT(String accountAT) {
-		this.accountAT = accountAT;
+	public void setIpService(String ipService) {
+		this.ipService = ipService;
 	}
-
-	public String getPwdAT() {
-		return pwdAT;
+	public CredentialClient getCredentialClient() {
+		return credentialClient;
 	}
-
-	public void setPwdAT(String pwdAT) {
-		this.pwdAT = pwdAT;
+	public void setCredentialClient(CredentialClient credentialClient) {
+		this.credentialClient = credentialClient;
 	}
-
-	public String getPriority() {
+	public Integer getPriority() {
 		return priority;
 	}
-
-	public void setPriority(String priority) {
+	public void setPriority(Integer priority) {
 		this.priority = priority;
 	}
-
-	public String getActive() {
+	public Boolean getActive() {
 		return active;
 	}
-
-	public void setActive(String active) {
+	public void setActive(Boolean active) {
 		this.active = active;
 	}
-
 	public String getStage() {
 		return stage;
 	}
-
 	public void setStage(String stage) {
 		this.stage = stage;
 	}
-
 	@Override
 	public String toString() {
-		return "ServiceConfig [service=" + service + ", account=" + account + ", accountAT=" + accountAT + ", pwdAT="
-				+ pwdAT + ", priority=" + priority + ", active=" + active + ", stage=" + stage + ", ipService="
-				+ ipService + ", portService=" + portService + "]";
+		return "ServiceConfig [service=" + service + ", portService=" + portService + ", ipService=" + ipService
+				+ ", credentialClient=" + credentialClient + ", priority=" + priority + ", active=" + active
+				+ ", stage=" + stage + "]";
 	}
 
-
-
+	
+	
 }

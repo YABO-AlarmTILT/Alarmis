@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import net.alarmtilt.cle.alarmis.api.AlarmisEventApiController;
+import net.alarmtilt.cle.alarmis.configuration.Constants;
 import net.alarmtilt.cle.alarmis.configuration.LoaderConfigurationService;
 import net.alarmtilt.cle.alarmis.model.AlertMessage;
 import net.alarmtilt.cle.alarmis.service.BuildObjetMessageFactoryService;
@@ -37,7 +38,7 @@ public class TCPserver {
 
 	{
 		try {
-			int serverPort = loaderConfigurationService != null
+			Integer serverPort = loaderConfigurationService != null
 					? loaderConfigurationService.getConfigOfService().getPortService() : port;
 			ServerSocket listenSocket = new ServerSocket(30000);
 			log.info("server start listening ... ... ... In port " + serverPort);
@@ -108,26 +109,26 @@ class Connection extends Thread {
 				log.info("string Buffer : " + sb);
 				AlertMessage alertMessage = buildObjetMessageFactoryService.parseXMLFile(sb.toString());
 
-				if (alertMessage != null) {
+				if (alertMessage != null && alertMessage.getResponseMessage() != null) {
 
-					String response = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><response result=\"accept\"/>\n";
-					String responseLength = "Data-Length: " + response.length()+"\n";
+					
+					String responseLength = "Data-Length: " + alertMessage.getResponseMessage().length()+Constants.SKIPE_LINE;
 					pw.print(responseLength);
-					pw.print("\n");
-					pw.print(response);
+					log.info("SEND TO CLIENT -->  "+responseLength);
+					pw.print(Constants.SKIPE_LINE);
+					
+					pw.print(alertMessage.getResponseMessage());
+					log.info("SEND TO CLIENT -->  "+alertMessage.getResponseMessage());
 					pw.flush();
 
-					System.out.println("Sending request to Socket Server");
-					// Sending request
-					// pw.println(response1);
-					// pw.print(response);
+					log.info("SENDING RESPONSE TO SOCKET CLIENT ........ IP adress -->" +clientSocket.getInetAddress());
+				
 
 					// pw.close();
 					// clientSocket.close();
-					log.info("Message sended to client .... " + alertMessage.getResponseMessage());
+				}
 
 					// alarmisEventApiController.launchAlert(alertMessage);
-				}
 				// Files.write(Paths.get("C:/Users/Yaakoub/test.txt"),
 				// sb.toString().getBytes());
 

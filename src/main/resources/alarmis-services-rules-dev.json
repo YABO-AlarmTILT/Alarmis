@@ -1,14 +1,15 @@
-  [
-	{
-		"service": "ALARMIS",
-		"portService": 30000,
-		"ipService": "127.0.0.1",
-		"account": "8034",
-		"accountAT": "tdevgea@test.fr",
-		"pwdAT": "tdevgeapw",
-		"priority": 2,
-		"active": true,
-		"stage": null
-	}
-]
-
+  [{
+  	"service": "ALARMIS",
+  	"portService": 20000,
+  	"ipService": "127.0.0.1",
+  	
+  	"credentialClient": {
+  		"uid": "tdevgea@test.fr",
+  		"pwd": "tdevgeapw",
+  		"account": "8034"
+  	},
+  	
+  	"priority": 1,
+  	"active": true,
+  	"stage": null
+  }]
