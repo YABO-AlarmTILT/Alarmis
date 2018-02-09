@@ -6,6 +6,7 @@ public class ServiceConfig {
 	Integer portService;
 	String ipService;
 	Integer timeOut;
+	String eclipsVersion;
 	CredentialClient credentialClient;
 	Integer priority;
 	Boolean active;
@@ -61,11 +62,18 @@ public class ServiceConfig {
 	public void setStage(String stage) {
 		this.stage = stage;
 	}
+	
+	public String getEclipsVersion() {
+		return eclipsVersion;
+	}
+	public void setEclipsVersion(String eclipsVersion) {
+		this.eclipsVersion = eclipsVersion;
+	}
 	@Override
 	public String toString() {
 		return "ServiceConfig [service=" + service + ", portService=" + portService + ", ipService=" + ipService
-				+ ", timeOut=" + timeOut + ", credentialClient=" + credentialClient + ", priority=" + priority
-				+ ", active=" + active + ", stage=" + stage + "]";
+				+ ", timeOut=" + timeOut + ", eclipsVersion=" + eclipsVersion + ", credentialClient=" + credentialClient
+				+ ", priority=" + priority + ", active=" + active + ", stage=" + stage + "]";
 	}
 
 }

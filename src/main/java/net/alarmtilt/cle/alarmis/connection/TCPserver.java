@@ -24,6 +24,7 @@ public class TCPserver {
 	private static final Logger log = LoggerFactory.getLogger(TCPserver.class);
 	private static final int port = 20000;
 	private static final int timeOut = 2000;
+	
 
 	@Autowired
 	BuildObjetMessageFactoryService buildObjetMessageFactoryService;
@@ -86,6 +87,7 @@ class Connection extends Thread {
 	 */
 	public void run() {
 		PrintWriter pw = null;
+		final String eclipstester = "1.1";
 
 		try {
 			pw = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -105,12 +107,15 @@ class Connection extends Thread {
 			while (true) {
 
 				String dataLine;
+				String alarmisVersion = null;
 				boolean addToBuffer = false;
 				StringBuffer sb = new StringBuffer();
 				StringBuffer sbMessage = new StringBuffer();
-				// br.
+				
 				while ((dataLine = br.readLine()) != null) {
 					log.info("Reçu data : " + dataLine);
+					if (dataLine.contains("e-CLIPS: "))
+					alarmisVersion = dataLine.substring(dataLine.lastIndexOf(":")+1);
 					sbMessage.append(dataLine);
 					if (dataLine.startsWith("<?xml"))
 						addToBuffer = true;
@@ -128,19 +133,21 @@ class Connection extends Thread {
 				if (alertMessage != null && alertMessage.getResponseMessage() != null) {
 					String responseLength = "Data-Length: " + alertMessage.getResponseMessage().length()
 							+ Constants.SKIP_LINE;
+					pw.print("e-CLIPS: "+alarmisVersion + Constants.SKIP_LINE);
+					log.info("send to client, by Printer writer ...."+alarmisVersion + Constants.SKIP_LINE);
 					pw.print(responseLength + Constants.SKIP_LINE);
+					log.info("send to client, by Printer writer ...."+responseLength + Constants.SKIP_LINE);
 					pw.print(alertMessage.getResponseMessage() + Constants.SKIP_LINE);
+					log.info("send to client, by Printer writer ...."+alertMessage.getResponseMessage() + Constants.SKIP_LINE);
 					log.info("SEND TO CLIENT -->  " + alertMessage.getResponseMessage());
 
 				}
-
 				pw.flush();
 				br.close();
 				pw.close();
 
 				if ((Constants.ALARMIS_ALERT_XML_RESPONSE_ACCEPT).equals(alertMessage.getResponseMessage()))
 					alarmisEventApiController.launchAlert(alertMessage);
-				// Files.write(Paths.get("C:/Users/Yaakoub/test.txt"),
 
 			}
 
@@ -149,6 +156,8 @@ class Connection extends Thread {
 			AlertMessage alertMessage = new AlertMessage();
 			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_10);
 			String responseLength = "Data-Length: " + alertMessage.getResponseMessage().length() + Constants.SKIP_LINE;
+			pw.print("e-CLIPS: "+eclipstester + Constants.SKIP_LINE);
+			log.info("send to client, by Printer writer ...."+eclipstester + Constants.SKIP_LINE);
 			pw.print(responseLength + Constants.SKIP_LINE);
 			pw.print(alertMessage.getResponseMessage() + Constants.SKIP_LINE);
 			pw.flush();
