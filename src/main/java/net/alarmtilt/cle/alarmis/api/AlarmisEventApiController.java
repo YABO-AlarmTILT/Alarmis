@@ -1,16 +1,14 @@
 package net.alarmtilt.cle.alarmis.api;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.annotations.ApiParam;
 import net.alarmtilt.cle.alarmis.client.AlarmTILTRestrictedWebService;
@@ -32,26 +30,16 @@ import net.alarmtilt.cle.alarmis.service.BuildObjetMessageFactoryService;
 public class AlarmisEventApiController implements AlarmisEventApi {
 
 	private static final Logger log = LoggerFactory.getLogger(AlarmisEventApiController.class);
-
-	private final ObjectMapper objectMapper;
-
-	private final HttpServletRequest request;
+	@Autowired
 	private BuildObjetMessageFactoryService buildObjetMessageFactoryService;
+	@Autowired
+	private LoaderConfigurationService loaderConfigurationService; 
 
 	private static AuthType AUTH_TYPE = AuthType.BASIC;
 	private static String AUTH_DN = "tdevgea@test.fr";
 	private static String AUTH_PW = "tdevgeapw";
 
 	private static String PROCEDURE_DEFINITION_NAME = "Alarmis";
-
-	@org.springframework.beans.factory.annotation.Autowired
-	public AlarmisEventApiController(ObjectMapper objectMapper, HttpServletRequest request,
-			BuildObjetMessageFactoryService buildObjetMessageFactoryService) {
-		this.objectMapper = objectMapper;
-		this.request = request;
-		this.buildObjetMessageFactoryService = buildObjetMessageFactoryService;
-
-	}
 
 	public ResponseEntity<Void> alarmisEventPost(
 			@ApiParam(value = "Pet object that needs to be added to the store", required = true) @Valid @RequestBody String body) {
@@ -107,8 +95,8 @@ public class AlarmisEventApiController implements AlarmisEventApi {
 
 		AuthParam authParam = new AuthParam();
 
-		authParam.setAuthDn(AUTH_DN);
-		authParam.setAuthPw(AUTH_PW);
+		authParam.setAuthDn(loaderConfigurationService.getConfigOfService().getCredentialClient().getUid());
+		authParam.setAuthPw(loaderConfigurationService.getConfigOfService().getCredentialClient().getPwd());
 		authParam.setAuthType(AUTH_TYPE);
 		authParam.setAuthRole(AuthRoleEnum.PROCEDURE_LAUNCHER);
 

@@ -5,10 +5,14 @@ public class ServiceConfig {
 	String service;
 	Integer portService;
 	String ipService;
+	Integer timeOut;
 	CredentialClient credentialClient;
 	Integer priority;
 	Boolean active;
 	String stage;
+	
+	
+	
 	public String getService() {
 		return service;
 	}
@@ -26,6 +30,12 @@ public class ServiceConfig {
 	}
 	public void setIpService(String ipService) {
 		this.ipService = ipService;
+	}
+	public Integer getTimeOut() {
+		return timeOut;
+	}
+	public void setTimeOut(Integer timeOut) {
+		this.timeOut = timeOut;
 	}
 	public CredentialClient getCredentialClient() {
 		return credentialClient;
@@ -54,10 +64,8 @@ public class ServiceConfig {
 	@Override
 	public String toString() {
 		return "ServiceConfig [service=" + service + ", portService=" + portService + ", ipService=" + ipService
-				+ ", credentialClient=" + credentialClient + ", priority=" + priority + ", active=" + active
-				+ ", stage=" + stage + "]";
+				+ ", timeOut=" + timeOut + ", credentialClient=" + credentialClient + ", priority=" + priority
+				+ ", active=" + active + ", stage=" + stage + "]";
 	}
 
-	
-	
 }

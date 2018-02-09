@@ -28,7 +28,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import net.alarmtilt.cle.alarmis.api.AlarmisEventApiController;
 import net.alarmtilt.cle.alarmis.configuration.Constants;
 import net.alarmtilt.cle.alarmis.configuration.LoaderConfigurationService;
 import net.alarmtilt.cle.alarmis.model.AlertMessage;
@@ -37,7 +36,7 @@ import net.alarmtilt.cle.alarmis.model.GenericAlert;
 @Service
 public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactoryService {
 
-	private static final Logger log = LoggerFactory.getLogger(AlarmisEventApiController.class);
+	private static final Logger log = LoggerFactory.getLogger(BuildObjetMessageFactoryImpl.class);
 	private static String FILE_PATH = "FilesMsg\\alarmisMsg";
 	private static String FILE_EXTENSION = "xml";
 	@Autowired
@@ -51,19 +50,19 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 	 * @throws IOException
 	 */
 	@Override
-	public AlertMessage parseXMLFile(String xmlStr)   {
-		
+	public AlertMessage parseXMLFile(String xmlStr) {
+
 		log.info("begin parsing Message from client .....");
 
 		AlertMessage alertMessage = new AlertMessage();
 		GenericAlert genericAlert = new GenericAlert();
-		//
-		File fXmlFile = convertStringToDocument(xmlStr);
-		log.info("Create XML file from ALARMIS message with the name --> "+fXmlFile.getName());
-		
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder dBuilder;
 		try {
+			File fXmlFile = null;
+			fXmlFile = convertStringToDocument(xmlStr);
+
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder;
+
 			dBuilder = dbFactory.newDocumentBuilder();
 
 			Document doc;
@@ -73,6 +72,8 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 			doc.getDocumentElement().normalize();
 
 			NodeList nList = doc.getElementsByTagName(Constants.ALARMIS_ALERT_XML_ROOT_NODE);
+			if (nList.getLength() == 0)
+				throw new Exception("SEND ERROR RESPONSE TO CIENT ....CAUSE NOT RESPECTING DTD XML FILE");
 
 			for (int temp = 0; temp < nList.getLength(); temp++) {
 
@@ -81,56 +82,67 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 
 					Element eElement = (Element) nNode;
-					
-					if(!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_PWD).equals(loaderConfigurationService.getConfigOfService().getCredentialClient().getPwd())){
-						log.info("ERROR CREDENTIAL ALARMTILT PWD --> "+eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_PWD));
-						alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT);
-					}
-					
-					if(!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID).equals(loaderConfigurationService.getConfigOfService().getCredentialClient().getUid())){
-						log.info("ERROR CREDENTIAL ALARMTILT UID --> "+eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID));
-						alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT);
+
+					if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_PWD)
+							.equals(loaderConfigurationService.getConfigOfService().getCredentialClient().getPwd())) {
+						log.error("ERROR CREDENTIAL ALARMTILT PWD --> "
+								+ eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_PWD));
+						alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_3);
 					}
 
-					// Set AlertMessage 
+					if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID)
+							.equals(loaderConfigurationService.getConfigOfService().getCredentialClient().getUid())) {
+						log.error("ERROR CREDENTIAL ALARMTILT UID --> "
+								+ eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID));
+						alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_2);
+					}
+
+					// Set AlertMessage
 					alertMessage.setPwd(eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_PWD));
 					alertMessage.setSid(eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_SID));
 					alertMessage.setUid(eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID));
 					alertMessage.setName(eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_NAME));
-					alertMessage.setDestination(eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_DESTINATION));
-					genericAlert.setAccount(Integer.parseInt(eElement.getElementsByTagName(Constants.ALARMIS_ALERT_XML_CHILD_NODE_GENERIC_ALERT).item(0)
-							.getAttributes().getNamedItem(Constants.ALARMIS_ALERT_XML_ATTRIBUT_ACCOUNT).getNodeValue()));
-					genericAlert.setZone(eElement.getElementsByTagName(Constants.ALARMIS_ALERT_XML_CHILD_NODE_GENERIC_ALERT).item(0).getAttributes()
-							.getNamedItem(Constants.ALARMIS_ALERT_XML_ATTRIBUT_ZONE).getNodeValue());
-					genericAlert.setEvent(eElement.getElementsByTagName(Constants.ALARMIS_ALERT_XML_CHILD_NODE_GENERIC_ALERT).item(0).getAttributes()
-							.getNamedItem(Constants.ALARMIS_ALERT_XML_ATTRIBUT_EVENT).getNodeValue());
-					//Set generic Alert
+					alertMessage
+							.setDestination(eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_DESTINATION));
+					genericAlert.setAccount(Integer.parseInt(
+							eElement.getElementsByTagName(Constants.ALARMIS_ALERT_XML_CHILD_NODE_GENERIC_ALERT).item(0)
+									.getAttributes().getNamedItem(Constants.ALARMIS_ALERT_XML_ATTRIBUT_ACCOUNT)
+									.getNodeValue()));
+					genericAlert.setZone(eElement
+							.getElementsByTagName(Constants.ALARMIS_ALERT_XML_CHILD_NODE_GENERIC_ALERT).item(0)
+							.getAttributes().getNamedItem(Constants.ALARMIS_ALERT_XML_ATTRIBUT_ZONE).getNodeValue());
+					genericAlert.setEvent(eElement
+							.getElementsByTagName(Constants.ALARMIS_ALERT_XML_CHILD_NODE_GENERIC_ALERT).item(0)
+							.getAttributes().getNamedItem(Constants.ALARMIS_ALERT_XML_ATTRIBUT_EVENT).getNodeValue());
+					// Set generic Alert
 					alertMessage.setGenericAlert(genericAlert);
-					
-					if(alertMessage.getResponseMessage() == null){
-						alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_ACCEPT); 
-						log.info("ALERT IS READY TO RUN WITH ATTRIBUTE :  " +alertMessage.toString());
-					}else{
-						log.info("ALERT IS NOT READY TO RUN  ATTRIBUTE :  " +alertMessage.toString()+"WITH RESPONSE -->  "+alertMessage.getResponseMessage());
+
+					if (alertMessage.getResponseMessage() == null) {
+						alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_ACCEPT);
+						log.info("ALERT IS READY TO RUN WITH ATTRIBUTE :  " + alertMessage.toString());
+					} else {
+						log.info("ALERT IS NOT READY TO RUN  ATTRIBUTE :  " + alertMessage.toString()
+								+ "WITH RESPONSE -->  " + alertMessage.getResponseMessage());
 					}
-				
 
 				}
 			}
 			log.info("END parsing Message from client .....");
 			return alertMessage;
-		} catch (ParserConfigurationException | IOException | SAXException e) {
-			log.info("ERROR : " + e);
-			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_ERROR);
-			log.info("ERROR PARSING XML FILE .... WITH RESPONSE --> "+alertMessage.getResponseMessage());
-			
-			log.info("END parsing Message from client .....");
+		} catch (Exception e) {
+			log.error("ERROR : " + e);
+			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_6);
+			log.error("ERROR PARSING XML FILE .... WITH RESPONSE --> " + alertMessage.getResponseMessage());
+
+			log.error("END parsing Message from client with error .....");
 			return alertMessage;
 		}
 
 	}
 
-	private static File convertStringToDocument(String xmlStr) {
+	private static File convertStringToDocument(String xmlStr) throws Exception {
+
+		log.info("CONVERT STRING TO FILE ..... STRING --> ", xmlStr);
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
 		DocumentBuilder builder;
@@ -150,8 +162,9 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 
 			return file;
 		} catch (Exception e) {
-			log.error("ERROR IN CONVERTING STRING TO FILE : " + e);
-			return null;
+			throw new Exception("ERROR IN CONVERTING STRING TO FILE : " + e);
+			// log.error("ERROR IN CONVERTING STRING TO FILE : " + e);
+
 		}
 
 	}
@@ -164,7 +177,7 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 	private static String generateFileName() {
 		DateFormat df = new SimpleDateFormat("yyyyMMddhhmmss");
 		String filename = FILE_PATH + df.format(new Date()) + "." + FILE_EXTENSION;
-		log.info("GENERATE FILE NAME ..... "+filename);
+		log.info("GENERATE FILE NAME ..... " + filename);
 		return filename;
 	}
 }

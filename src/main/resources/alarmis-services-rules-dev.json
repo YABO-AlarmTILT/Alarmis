@@ -2,7 +2,8 @@
   	"service": "ALARMIS",
   	"portService": 20000,
   	"ipService": "127.0.0.1",
-  	
+/*   	time out to close connection */
+  	"timeOut": 2000,
   	"credentialClient": {
   		"uid": "tdevgea@test.fr",
   		"pwd": "tdevgeapw",

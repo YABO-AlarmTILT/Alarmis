@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/AlarmisMessage" xmlns:tns="http://www.example.org/AlarmisMessage" elementFormDefault="qualified">
+
+    <element name="message" type="string"></element>
+
+
+
+
+    <attribute name="pwd" type="string"></attribute>
+
+    <attribute name="sid" type="string"></attribute>
+
+    <attribute name="uid" type="string"></attribute>
+
+    <attribute name="name" type="string"></attribute>
+
+    <attribute name="destination" type="string"></attribute>
+</schema>

@@ -26,13 +26,13 @@ public class TCPclient {
 	private void start() throws IOException {
 		String input;
 		while (true) {
-			input = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
-			input += "<message pwd=\"alatil2018\" sid=\"\" uid=\"alatil\" name=\"generic alert\" destination=\"AlarmTILT\">\n";
+			input = " encoding=\"UTF-8\" ?>/";
+			input += "<message pwd=\"alatil222018\" sid=\"\" uid=\"alatil\" name=\"generic alert\" destination=\"AlarmTILT\">\n";
 			input += "<generic_alert account=\"8034\" event=\"ZA\" zone= \"11\" />\n";
 			input += "</message>\n";
 			PrintWriter out = new PrintWriter(this.socket.getOutputStream(), true);
 			BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			out.println(input);
+			out.println("");
 			out.flush();
 			br.readLine();
 			String dataLine;
