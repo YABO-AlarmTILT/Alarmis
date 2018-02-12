@@ -96,6 +96,12 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 								+ eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID));
 						alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_2);
 					}
+					if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID)
+							.equals(loaderConfigurationService.getConfigOfService().getCredentialClient().getUid())) {
+						log.error("ERROR CREDENTIAL ALARMTILT UID --> "
+								+ eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID));
+						alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_2);
+					}
 
 					// Set AlertMessage
 					alertMessage.setPwd(eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_PWD));

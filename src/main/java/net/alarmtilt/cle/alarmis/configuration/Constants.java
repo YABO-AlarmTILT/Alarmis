@@ -14,6 +14,12 @@ public final class Constants {
 	public static final String ALARMIS_ALERT_XML_ATTRIBUT_ZONE = "zone";
 	
 	
+	
+	public static final String ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH = "Data-Length: ";
+	public static final String ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS = "e-CLIPS: ";
+	public static final String ALARMIS_ALERT_XML_TAG = "<?xml";
+	
+	
 	public static final String SKIP_LINE = "\n";
 	public static final byte[] DELIMITER = "\n".getBytes();
 	

@@ -24,7 +24,6 @@ public class TCPserver {
 	private static final Logger log = LoggerFactory.getLogger(TCPserver.class);
 	private static final int port = 20000;
 	private static final int timeOut = 2000;
-	
 
 	@Autowired
 	BuildObjetMessageFactoryService buildObjetMessageFactoryService;
@@ -51,7 +50,8 @@ public class TCPserver {
 				clientSocket.setSoTimeout(loaderConfigurationService != null
 						? loaderConfigurationService.getConfigOfService().getTimeOut() : timeOut);
 				log.info("THE timeOut OF TCPserver  " + serverPort);
-				new Connection(clientSocket, buildObjetMessageFactoryService, alarmisEventApiController);
+				new Connection(clientSocket, buildObjetMessageFactoryService, alarmisEventApiController,
+						loaderConfigurationService);
 			}
 		} catch (IOException e) {
 			log.info("Listen :" + e.getMessage());
@@ -67,13 +67,17 @@ class Connection extends Thread {
 	BuildObjetMessageFactoryService buildObjetMessageFactoryService;
 	@Autowired
 	AlarmisEventApiController alarmisEventApiController;
+	@Autowired
+	private LoaderConfigurationService loaderConfigurationService;
 
 	public Connection(Socket aClientSocket, BuildObjetMessageFactoryService buildObjetMessageFactoryService,
-			AlarmisEventApiController alarmisEventApiController) {
+			AlarmisEventApiController alarmisEventApiController,
+			LoaderConfigurationService loaderConfigurationService) {
 
 		this.clientSocket = aClientSocket;
 		this.buildObjetMessageFactoryService = buildObjetMessageFactoryService;
 		this.alarmisEventApiController = alarmisEventApiController;
+		this.loaderConfigurationService = loaderConfigurationService;
 
 		log.info("Connexion accept from client socket ....." + aClientSocket);
 		this.start();
@@ -87,7 +91,7 @@ class Connection extends Thread {
 	 */
 	public void run() {
 		PrintWriter pw = null;
-		final String eclipstester = "1.1";
+		String alarmisVersion = "";
 
 		try {
 			pw = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -107,17 +111,17 @@ class Connection extends Thread {
 			while (true) {
 
 				String dataLine;
-				String alarmisVersion = null;
+				alarmisVersion = "";
 				boolean addToBuffer = false;
 				StringBuffer sb = new StringBuffer();
 				StringBuffer sbMessage = new StringBuffer();
-				
+
 				while ((dataLine = br.readLine()) != null) {
 					log.info("Reçu data : " + dataLine);
-					if (dataLine.contains("e-CLIPS: "))
-					alarmisVersion = dataLine.substring(dataLine.lastIndexOf(":")+1);
+					if (dataLine.contains(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS))
+						alarmisVersion = dataLine.substring(dataLine.lastIndexOf(":") + 1);
 					sbMessage.append(dataLine);
-					if (dataLine.startsWith("<?xml"))
+					if (dataLine.startsWith(Constants.ALARMIS_ALERT_XML_TAG))
 						addToBuffer = true;
 					if (addToBuffer)
 						sb.append(dataLine);
@@ -127,18 +131,27 @@ class Connection extends Thread {
 
 				log.info("string Buffer : " + sb);
 				AlertMessage alertMessage = new AlertMessage();
+				if (!alarmisVersion.trim()
+						.equals(loaderConfigurationService.getConfigOfService().getEclipsVersion().trim())) {
+					alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_8);
+					log.error("ERROR VERSION OF ECLIPS MESSENGER NOT SUPPORTED ..." + alarmisVersion);
+
+					throw new Exception(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_8);
+				}
 				alertMessage = buildObjetMessageFactoryService.parseXMLFile(sb.toString());
 				log.info("ALERT MESSAGE with alertMessageObject --> " + alertMessage.toString());
 
 				if (alertMessage != null && alertMessage.getResponseMessage() != null) {
-					String responseLength = "Data-Length: " + alertMessage.getResponseMessage().length()
-							+ Constants.SKIP_LINE;
-					pw.print("e-CLIPS: "+alarmisVersion + Constants.SKIP_LINE);
-					log.info("send to client, by Printer writer ...."+alarmisVersion + Constants.SKIP_LINE);
+					String responseLength = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH
+							+ alertMessage.getResponseMessage().length() + Constants.SKIP_LINE;
+					pw.print(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + alarmisVersion
+							+ Constants.SKIP_LINE);
+					log.info("send to client, by Printer writer ...." + alarmisVersion + Constants.SKIP_LINE);
 					pw.print(responseLength + Constants.SKIP_LINE);
-					log.info("send to client, by Printer writer ...."+responseLength + Constants.SKIP_LINE);
+					log.info("send to client, by Printer writer ...." + responseLength + Constants.SKIP_LINE);
 					pw.print(alertMessage.getResponseMessage() + Constants.SKIP_LINE);
-					log.info("send to client, by Printer writer ...."+alertMessage.getResponseMessage() + Constants.SKIP_LINE);
+					log.info("send to client, by Printer writer ...." + alertMessage.getResponseMessage()
+							+ Constants.SKIP_LINE);
 					log.info("SEND TO CLIENT -->  " + alertMessage.getResponseMessage());
 
 				}
@@ -151,13 +164,20 @@ class Connection extends Thread {
 
 			}
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error("EOF:" + e.getMessage());
+
 			AlertMessage alertMessage = new AlertMessage();
-			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_10);
-			String responseLength = "Data-Length: " + alertMessage.getResponseMessage().length() + Constants.SKIP_LINE;
-			pw.print("e-CLIPS: "+eclipstester + Constants.SKIP_LINE);
-			log.info("send to client, by Printer writer ...."+eclipstester + Constants.SKIP_LINE);
+			if (e.getMessage().startsWith(Constants.ALARMIS_ALERT_XML_TAG)) {
+				alertMessage.setResponseMessage(e.getMessage());
+
+			} else {
+				alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_10);
+			}
+			String responseLength = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH
+					+ alertMessage.getResponseMessage().length() + Constants.SKIP_LINE;
+			pw.print(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + alarmisVersion + Constants.SKIP_LINE);
+			log.info("send to client, by Printer writer ...." + alarmisVersion + Constants.SKIP_LINE);
 			pw.print(responseLength + Constants.SKIP_LINE);
 			pw.print(alertMessage.getResponseMessage() + Constants.SKIP_LINE);
 			pw.flush();
