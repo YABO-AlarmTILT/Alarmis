@@ -143,16 +143,20 @@ class Connection extends Thread {
 
 				if (alertMessage != null && alertMessage.getResponseMessage() != null) {
 					String responseLength = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH
-							+ alertMessage.getResponseMessage().length() + Constants.SKIP_LINE;
-					pw.print(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + alarmisVersion
-							+ Constants.SKIP_LINE);
-					log.info("send to client, by Printer writer ...." + alarmisVersion + Constants.SKIP_LINE);
+							+ alertMessage.getResponseMessage().length();
+
+					String responseversion = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS
+							+ alarmisVersion.trim();
+
+					pw.print(Constants.SKIP_LINE);
+					pw.print(responseversion + Constants.SKIP_LINE);
+					log.info(responseversion);
 					pw.print(responseLength + Constants.SKIP_LINE);
-					log.info("send to client, by Printer writer ...." + responseLength + Constants.SKIP_LINE);
+					log.info(responseLength);
+					pw.print(Constants.SKIP_LINE);
 					pw.print(alertMessage.getResponseMessage() + Constants.SKIP_LINE);
-					log.info("send to client, by Printer writer ...." + alertMessage.getResponseMessage()
-							+ Constants.SKIP_LINE);
-					log.info("SEND TO CLIENT -->  " + alertMessage.getResponseMessage());
+					log.info(alertMessage.getResponseMessage() + Constants.SKIP_LINE);
+					log.info("RESPONSE SENDED TO CLIENT -->  " + alertMessage.getResponseMessage());
 
 				}
 				pw.flush();

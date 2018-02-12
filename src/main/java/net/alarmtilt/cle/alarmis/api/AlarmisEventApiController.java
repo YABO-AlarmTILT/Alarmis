@@ -36,8 +36,8 @@ public class AlarmisEventApiController implements AlarmisEventApi {
 	private LoaderConfigurationService loaderConfigurationService; 
 
 	private static AuthType AUTH_TYPE = AuthType.BASIC;
-	private static String AUTH_DN = "tdevgea@test.fr";
-	private static String AUTH_PW = "tdevgeapw";
+	private static String AUTH_DN = "alarmis.post@test.lu";
+	private static String AUTH_PW = "Alarmis2018$@";
 
 	private static String PROCEDURE_DEFINITION_NAME = "Alarmis";
 
@@ -95,8 +95,8 @@ public class AlarmisEventApiController implements AlarmisEventApi {
 
 		AuthParam authParam = new AuthParam();
 
-		authParam.setAuthDn(loaderConfigurationService.getConfigOfService().getCredentialClient().getUid());
-		authParam.setAuthPw(loaderConfigurationService.getConfigOfService().getCredentialClient().getPwd());
+		authParam.setAuthDn(AUTH_DN);
+		authParam.setAuthPw(AUTH_PW);
 		authParam.setAuthType(AUTH_TYPE);
 		authParam.setAuthRole(AuthRoleEnum.PROCEDURE_LAUNCHER);
 
