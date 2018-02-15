@@ -39,7 +39,7 @@ public class TCPserver {
 
 	{
 		try {
-			Integer serverPort = loaderConfigurationService != null
+			Integer serverPort = loaderConfigurationService.getConfigOfService().getPortService() != null
 					? loaderConfigurationService.getConfigOfService().getPortService() : port;
 			ServerSocket listenSocket = new ServerSocket(serverPort);
 
