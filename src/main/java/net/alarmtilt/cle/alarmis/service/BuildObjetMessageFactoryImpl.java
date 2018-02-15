@@ -37,7 +37,7 @@ import net.alarmtilt.cle.alarmis.model.GenericAlert;
 public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactoryService {
 
 	private static final Logger log = LoggerFactory.getLogger(BuildObjetMessageFactoryImpl.class);
-	private static String FILE_PATH = "FilesMsg\\alarmisMsg";
+	private static String FILE_PATH = "alarmisMsg";
 	private static String FILE_EXTENSION = "xml";
 	@Autowired
 	private LoaderConfigurationService loaderConfigurationService;
