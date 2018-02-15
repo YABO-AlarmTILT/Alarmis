@@ -8,12 +8,11 @@ public class ServiceConfig {
 	Integer timeOut;
 	String eclipsVersion;
 	CredentialClient credentialClient;
+	String uidAT;
+	String pwdAT;
 	Integer priority;
 	Boolean active;
 	String stage;
-	
-	
-	
 	public String getService() {
 		return service;
 	}
@@ -38,11 +37,29 @@ public class ServiceConfig {
 	public void setTimeOut(Integer timeOut) {
 		this.timeOut = timeOut;
 	}
+	public String getEclipsVersion() {
+		return eclipsVersion;
+	}
+	public void setEclipsVersion(String eclipsVersion) {
+		this.eclipsVersion = eclipsVersion;
+	}
 	public CredentialClient getCredentialClient() {
 		return credentialClient;
 	}
 	public void setCredentialClient(CredentialClient credentialClient) {
 		this.credentialClient = credentialClient;
+	}
+	public String getUidAT() {
+		return uidAT;
+	}
+	public void setUidAT(String uidAT) {
+		this.uidAT = uidAT;
+	}
+	public String getPwdAT() {
+		return pwdAT;
+	}
+	public void setPwdAT(String pwdAT) {
+		this.pwdAT = pwdAT;
 	}
 	public Integer getPriority() {
 		return priority;
@@ -62,18 +79,12 @@ public class ServiceConfig {
 	public void setStage(String stage) {
 		this.stage = stage;
 	}
-	
-	public String getEclipsVersion() {
-		return eclipsVersion;
-	}
-	public void setEclipsVersion(String eclipsVersion) {
-		this.eclipsVersion = eclipsVersion;
-	}
 	@Override
 	public String toString() {
 		return "ServiceConfig [service=" + service + ", portService=" + portService + ", ipService=" + ipService
 				+ ", timeOut=" + timeOut + ", eclipsVersion=" + eclipsVersion + ", credentialClient=" + credentialClient
-				+ ", priority=" + priority + ", active=" + active + ", stage=" + stage + "]";
+				+ ", uidAT=" + uidAT + ", pwdAT=" + pwdAT + ", priority=" + priority + ", active=" + active + ", stage="
+				+ stage + "]";
 	}
 
 }

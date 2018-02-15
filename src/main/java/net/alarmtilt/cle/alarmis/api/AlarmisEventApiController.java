@@ -90,45 +90,54 @@ public class AlarmisEventApiController implements AlarmisEventApi {
 	}
 
 	public void launchAlert(AlertMessage alertMessage) {
-		WsResV3 service = new WsResV3();
-		AlarmTILTRestrictedWebService port = service.getAlarmTILTRestrictedWebServicePort();
+		log.info("***************** START launchProcedure  **************************************** ");
+		if(loaderConfigurationService !=null){
+			WsResV3 service = new WsResV3();
+			AlarmTILTRestrictedWebService port = service.getAlarmTILTRestrictedWebServicePort();
 
-		AuthParam authParam = new AuthParam();
+			AuthParam authParam = new AuthParam();
 
-		authParam.setAuthDn(AUTH_DN);
-		authParam.setAuthPw(AUTH_PW);
-		authParam.setAuthType(AUTH_TYPE);
-		authParam.setAuthRole(AuthRoleEnum.PROCEDURE_LAUNCHER);
+			authParam.setAuthDn(loaderConfigurationService.getConfigOfService().getUidAT().trim());
+			log.info("AlarmTILT Credential UID : "+loaderConfigurationService.getConfigOfService().getUidAT().trim());
+			authParam.setAuthPw(loaderConfigurationService.getConfigOfService().getPwdAT().trim());
+			log.info("AlarmTILT Credential PWD : "+loaderConfigurationService.getConfigOfService().getPwdAT().trim());
+			authParam.setAuthType(AUTH_TYPE);
+			authParam.setAuthRole(AuthRoleEnum.PROCEDURE_LAUNCHER);
 
-		LaunchProcedureParam launchProcedureParam = new LaunchProcedureParam();
-		launchProcedureParam.setProcedureName(PROCEDURE_DEFINITION_NAME);
+			LaunchProcedureParam launchProcedureParam = new LaunchProcedureParam();
+			launchProcedureParam.setProcedureName(loaderConfigurationService.getConfigOfService().getService().trim().toLowerCase());
+			log.info("PROCEDURE NAME  : "+loaderConfigurationService.getConfigOfService().getService().trim().toLowerCase());
 
-		ProcedureVariable variable = null;
+			ProcedureVariable variable = null;
 
-		variable = new ProcedureVariable();
-		variable.setName("account");
-		variable.setValue(alertMessage.getGenericAlert().getAccount().toString());
-		launchProcedureParam.getVariables().add(variable);
+			variable = new ProcedureVariable();
+			variable.setName("account");
+			variable.setValue(alertMessage.getGenericAlert().getAccount().toString());
+			launchProcedureParam.getVariables().add(variable);
 
-		variable = new ProcedureVariable();
-		variable.setName("event");
-		variable.setValue(alertMessage.getGenericAlert().getEvent());
-		launchProcedureParam.getVariables().add(variable);
+			variable = new ProcedureVariable();
+			variable.setName("event");
+			variable.setValue(alertMessage.getGenericAlert().getEvent());
+			launchProcedureParam.getVariables().add(variable);
 
-		variable = new ProcedureVariable();
-		variable.setName("zone");
-		variable.setValue(alertMessage.getGenericAlert().getZone());
-		launchProcedureParam.getVariables().add(variable);
+			variable = new ProcedureVariable();
+			variable.setName("zone");
+			variable.setValue(alertMessage.getGenericAlert().getZone());
+			launchProcedureParam.getVariables().add(variable);
 
-		LaunchProcedureResult launchProcedureResult = port.launchProcedure(authParam, launchProcedureParam);
+			LaunchProcedureResult launchProcedureResult = port.launchProcedure(authParam, launchProcedureParam);
 
-		log.info("launchProcedure result:<" + launchProcedureResult.getResult() + ">");
-		if (LaunchProcedureResultEnum.OK.equals(launchProcedureResult.getResult())) {
-			log.info("procedure has been successfully launched, procedure instance id=<"
-					+ launchProcedureResult.getProcedureInstance().getId() + ">");
+			log.info("launchProcedure result:<" + launchProcedureResult.getResult() + ">");
+			if (LaunchProcedureResultEnum.OK.equals(launchProcedureResult.getResult())) {
+				log.info("procedure has been successfully launched, procedure instance id=<"
+						+ launchProcedureResult.getProcedureInstance().getId() + ">");
+			}
+
+			log.info("END.");
+		}else{
+			log.error("ERROR IN launchProcedure THE CONFIG SERVICE IS NULL  "+loaderConfigurationService);
 		}
-
-		log.info("END.");
+		log.info("***************** END launchProcedure  **************************************** ");
 	}
 
 }
