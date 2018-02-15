@@ -162,7 +162,18 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 			TransformerFactory tranFactory = TransformerFactory.newInstance();
 			Transformer aTransformer = tranFactory.newTransformer();
 			Source src = new DOMSource(document);
-			File file = new File(generateFileName());
+			File dir = new File("AlertMessages");
+
+			// attempt to create the directory here
+			boolean successful = dir.mkdir();
+			if (successful) {
+				// creating the directory succeeded
+				log.info("directory was created successfully");
+			} else {
+				// creating the directory failed
+				log.info("failed trying to create the directory");
+			}
+			File file = new File("AlertMessages/"+generateFileName());
 			Result dest = new StreamResult(file);
 			aTransformer.transform(src, dest);
 

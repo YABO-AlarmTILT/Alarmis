@@ -128,16 +128,21 @@ class Connection extends Thread {
 					if (!br.ready())
 						break;
 				}
-
-				log.info("string Buffer : " + sb);
+				log.info("************************************* END RECEIVING DATA FROM CLIENT*********************************************************");
 				AlertMessage alertMessage = new AlertMessage();
-				if (!alarmisVersion.trim()
+
+				if (alarmisVersion.isEmpty()) {
+					alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_4);
+					log.error("ERROR MESSAGE IS EMPTY .......");
+					throw new Exception(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_4);
+
+				} else if (!alarmisVersion.trim()
 						.equals(loaderConfigurationService.getConfigOfService().getEclipsVersion().trim())) {
 					alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_8);
 					log.error("ERROR VERSION OF ECLIPS MESSENGER NOT SUPPORTED ..." + alarmisVersion);
-
 					throw new Exception(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_8);
 				}
+				log.info("************************************* SEND DATA FOR PARSING TO XML FILE*********************************************************");
 				alertMessage = buildObjetMessageFactoryService.parseXMLFile(sb.toString());
 				log.info("ALERT MESSAGE with alertMessageObject --> " + alertMessage.toString());
 
@@ -150,12 +155,13 @@ class Connection extends Thread {
 
 					pw.print(Constants.SKIP_LINE);
 					pw.print(responseversion + Constants.SKIP_LINE);
-					log.info(responseversion);
+					log.info("Send DATA : " + responseversion);
 					pw.print(responseLength + Constants.SKIP_LINE);
-					log.info(responseLength);
+					log.info("Send DATA : " + responseLength);
 					pw.print(Constants.SKIP_LINE);
 					pw.print(alertMessage.getResponseMessage() + Constants.SKIP_LINE);
-					log.info(alertMessage.getResponseMessage() + Constants.SKIP_LINE);
+					log.info("Send DATA : " + alertMessage.getResponseMessage());
+					
 					log.info("RESPONSE SENDED TO CLIENT -->  " + alertMessage.getResponseMessage());
 
 				}
@@ -180,10 +186,16 @@ class Connection extends Thread {
 			}
 			String responseLength = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH
 					+ alertMessage.getResponseMessage().length() + Constants.SKIP_LINE;
+
+			pw.print(Constants.SKIP_LINE);
 			pw.print(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + alarmisVersion + Constants.SKIP_LINE);
-			log.info("send to client, by Printer writer ...." + alarmisVersion + Constants.SKIP_LINE);
+			log.info("Send DATA : " + Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + alarmisVersion
+					+ Constants.SKIP_LINE);
+
 			pw.print(responseLength + Constants.SKIP_LINE);
+			log.info("Send DATA : " + responseLength);
 			pw.print(alertMessage.getResponseMessage() + Constants.SKIP_LINE);
+			log.info("Send DATA : " + alertMessage.getResponseMessage());
 			pw.flush();
 			pw.close();
 
