@@ -9,8 +9,12 @@
   		"pwd": "alatil2018",
   		"account": "8034"
   	},
+<<<<<<< HEAD
   	"uidAT":"alarmis.post@test.lu",
   	"pwdAT":"Alarmis2018$@",
+=======
+  	
+>>>>>>> refs/remotes/origin/develop
   	"priority": 1,
   	"active": true,
   	"stage": null
