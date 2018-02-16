@@ -34,7 +34,7 @@ public class RefreshConfigApiController {
 		loadConfigurationImpl.loadServiceTable();
 		List<ServiceConfig> serviceConfig = loadConfigurationImpl.getServiceConfigList();
 		String jsonServiceConfig = gson.toJson(serviceConfig);
-		logger.info("Voice rules routers ... " + jsonServiceConfig);
+		logger.info("Service rules configuration ... " + jsonServiceConfig);
 		return new ResponseEntity<Object>(jsonServiceConfig, HttpStatus.OK);
 	}
 }

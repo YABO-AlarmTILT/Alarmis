@@ -119,5 +119,28 @@ public class LoadConfigurationImpl implements LoaderConfigurationService {
 
 		return sc;
 	}
+	
+	/**
+	 * return higth priority provider
+	 * 
+	 * @param voiceRoutes
+	 * @return
+	 */
+	public List<ServiceConfig> getRoutesByPriority(List<ServiceConfig> ServiceConfigList) {
+		List<ServiceConfig> serviceConfigByPriority = new ArrayList<>();
+		logger.info("get routes by higth priority ..." );
+		//define low priority
+		Integer min=100;
+		for (ServiceConfig serviceConfig : ServiceConfigList) {
+			Integer currrent=serviceConfig.getPriority();
+			
+			if (serviceConfig.getPriority() < min ) {
+				serviceConfigByPriority.removeAll(ServiceConfigList);
+				min = currrent;
+				serviceConfigByPriority.add(serviceConfig);
+			}
+		}
+		return serviceConfigByPriority;
+	}
 
 }
