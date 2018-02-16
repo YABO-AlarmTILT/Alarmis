@@ -153,7 +153,8 @@ class Connection extends Thread {
 					String responseversion = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS
 							+ alarmisVersion.trim();
 
-					pw.print(Constants.SKIP_LINE);
+					//pw.print(Constants.SKIP_LINE);
+					//pw.print(responseversion + Constants.SKIP_LINE);
 					pw.print(responseversion + Constants.SKIP_LINE);
 					log.info("Send DATA : " + responseversion);
 					pw.print(responseLength + Constants.SKIP_LINE);
