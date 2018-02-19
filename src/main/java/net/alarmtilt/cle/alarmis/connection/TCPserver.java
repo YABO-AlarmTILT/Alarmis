@@ -69,6 +69,7 @@ class Connection extends Thread {
 	AlarmisEventApiController alarmisEventApiController;
 	@Autowired
 	private LoaderConfigurationService loaderConfigurationService;
+	AlertMessage alertMessage = new AlertMessage();
 
 	public Connection(Socket aClientSocket, BuildObjetMessageFactoryService buildObjetMessageFactoryService,
 			AlarmisEventApiController alarmisEventApiController,
@@ -129,7 +130,7 @@ class Connection extends Thread {
 						break;
 				}
 				log.info("************************************* END RECEIVING DATA FROM CLIENT*********************************************************");
-				AlertMessage alertMessage = new AlertMessage();
+				
 
 				if (alarmisVersion.isEmpty()) {
 					alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_4);
@@ -153,8 +154,10 @@ class Connection extends Thread {
 					String responseversion = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS
 							+ alarmisVersion.trim();
 
-					//pw.print(Constants.SKIP_LINE);
-					//pw.print(responseversion + Constants.SKIP_LINE);
+					// juste pour le teste apres les deplyoiement sur eBRC, je vais dipluquer l'envoit de la version 
+					if(loaderConfigurationService.getConfigOfService().getActive()){
+						pw.print(responseversion + Constants.SKIP_LINE);
+					}
 					pw.print(responseversion + Constants.SKIP_LINE);
 					log.info("Send DATA : " + responseversion);
 					pw.print(responseLength + Constants.SKIP_LINE);
@@ -176,29 +179,39 @@ class Connection extends Thread {
 			}
 
 		} catch (Exception e) {
+			boolean sendToClient = true;
 			log.error("EOF:" + e.getMessage());
 
-			AlertMessage alertMessage = new AlertMessage();
+			//AlertMessage alertMessage = new AlertMessage();
 			if (e.getMessage().startsWith(Constants.ALARMIS_ALERT_XML_TAG)) {
 				alertMessage.setResponseMessage(e.getMessage());
 
-			} else {
+			} else if (alertMessage.getResponseMessage() != null && !alertMessage.getResponseMessage().isEmpty()){
+				log.info("ERROR ..." +alertMessage.getResponseMessage());
+				sendToClient = false;
+			}else {
 				alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_10);
 			}
-			String responseLength = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH
-					+ alertMessage.getResponseMessage().length() + Constants.SKIP_LINE;
+			if(sendToClient){
+				String responseLength = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH
+						+ alertMessage.getResponseMessage().length() + Constants.SKIP_LINE;
 
-			pw.print(Constants.SKIP_LINE);
-			pw.print(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + alarmisVersion + Constants.SKIP_LINE);
-			log.info("Send DATA : " + Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + alarmisVersion
-					+ Constants.SKIP_LINE);
+				// juste pour le teste apres les deplyoiement sur eBRC, je vais dipluquer l'envoit de la version 
+				if(loaderConfigurationService.getConfigOfService().getActive()){
+					pw.print(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + alarmisVersion + Constants.SKIP_LINE);
+				}
+				pw.print(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + alarmisVersion + Constants.SKIP_LINE);
+				log.info("Send DATA : " + Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + alarmisVersion
+						+ Constants.SKIP_LINE);
 
-			pw.print(responseLength + Constants.SKIP_LINE);
-			log.info("Send DATA : " + responseLength);
-			pw.print(alertMessage.getResponseMessage() + Constants.SKIP_LINE);
-			log.info("Send DATA : " + alertMessage.getResponseMessage());
-			pw.flush();
-			pw.close();
+				pw.print(responseLength + Constants.SKIP_LINE);
+				log.info("Send DATA : " + responseLength);
+				pw.print(alertMessage.getResponseMessage() + Constants.SKIP_LINE);
+				log.info("Send DATA : " + alertMessage.getResponseMessage());
+				pw.flush();
+				pw.close();
+			}
+		
 
 		}
 
