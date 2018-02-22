@@ -26,8 +26,9 @@ public class TCPclient {
 	private void start() throws IOException {
 		String input;
 		BufferedReader br = null;
-		
+
 		while (true) {
+
 			input = " e-CLIPS: 1.1\n";
 			input += "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
 			input += "<message pwd=\"alatil222018\" sid=\"\" uid=\"alatil\" name=\"generic alert\" destination=\"AlarmTILT\">\n";
@@ -37,19 +38,14 @@ public class TCPclient {
 			br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			out.println(input);
 			out.flush();
-			
-			
-			// br.readLine();
 			String dataLine = null;
 			while (true) {
 				while ((dataLine = br.readLine()) != null) {
 					System.out.println("Reçu data : " + dataLine);
 
 				}
-				
 			}
-			
 		}
-		
+
 	}
 }
