@@ -21,10 +21,6 @@ public final class Constants {
 	
 	
 	public static final String SKIP_LINE = "\n";
-	public static final byte[] DELIMITER = "\n".getBytes();
-	
-	
-	
 	
 	
 	public static final String ALARMIS_ALERT_XML_RESPONSE_REJECT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><response result=\"reject\" />";

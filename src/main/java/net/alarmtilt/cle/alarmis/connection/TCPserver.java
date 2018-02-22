@@ -112,7 +112,6 @@ class Connection extends Thread {
 			while (true) {
 
 				String dataLine;
-				alarmisVersion = "";
 				boolean addToBuffer = false;
 				StringBuffer sb = new StringBuffer();
 				StringBuffer sbMessage = new StringBuffer();
@@ -120,7 +119,7 @@ class Connection extends Thread {
 				while ((dataLine = br.readLine()) != null) {
 					log.info("Reçu data : " + dataLine);
 					if (dataLine.contains(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS))
-						alarmisVersion = dataLine.substring(dataLine.lastIndexOf(":") + 1);
+						alarmisVersion = dataLine.substring(dataLine.lastIndexOf(":") + 1).trim();
 					sbMessage.append(dataLine);
 					if (dataLine.startsWith(Constants.ALARMIS_ALERT_XML_TAG))
 						addToBuffer = true;
@@ -129,21 +128,22 @@ class Connection extends Thread {
 					if (!br.ready())
 						break;
 				}
-				log.info("************************************* END RECEIVING DATA FROM CLIENT*********************************************************");
-				
+				log.info(
+						"************************************* END RECEIVING DATA FROM CLIENT*********************************************************");
 
 				if (alarmisVersion.isEmpty()) {
 					alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_4);
 					log.error("ERROR MESSAGE IS EMPTY .......");
 					throw new Exception(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_4);
 
-				} else if (!alarmisVersion.trim()
+				} else if (!alarmisVersion
 						.equals(loaderConfigurationService.getConfigOfService().getEclipsVersion().trim())) {
 					alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_8);
 					log.error("ERROR VERSION OF ECLIPS MESSENGER NOT SUPPORTED ..." + alarmisVersion);
 					throw new Exception(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_8);
 				}
-				log.info("************************************* SEND DATA FOR PARSING TO XML FILE*********************************************************");
+				log.info(
+						"************************************* SEND DATA FOR PARSING TO XML FILE*********************************************************");
 				alertMessage = buildObjetMessageFactoryService.parseXMLFile(sb.toString());
 				log.info("ALERT MESSAGE with alertMessageObject --> " + alertMessage.toString());
 
@@ -151,11 +151,11 @@ class Connection extends Thread {
 					String responseLength = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH
 							+ alertMessage.getResponseMessage().length();
 
-					String responseversion = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS
-							+ alarmisVersion.trim();
+					String responseversion = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + alarmisVersion;
 
-					// juste pour le teste apres les deplyoiement sur eBRC, je vais dipluquer l'envoit de la version 
-					if(loaderConfigurationService.getConfigOfService().getActive()){
+					// juste pour le teste apres les deplyoiement sur eBRC, je
+					// vais dipluquer l'envoit de la version
+					if (loaderConfigurationService.getConfigOfService().getActive()) {
 						pw.print(responseversion + Constants.SKIP_LINE);
 					}
 					pw.print(responseversion + Constants.SKIP_LINE);
@@ -165,7 +165,7 @@ class Connection extends Thread {
 					pw.print(Constants.SKIP_LINE);
 					pw.print(alertMessage.getResponseMessage() + Constants.SKIP_LINE);
 					log.info("Send DATA : " + alertMessage.getResponseMessage());
-					
+
 					log.info("RESPONSE SENDED TO CLIENT -->  " + alertMessage.getResponseMessage());
 
 				}
@@ -182,36 +182,36 @@ class Connection extends Thread {
 			boolean sendToClient = true;
 			log.error("EOF:" + e.getMessage());
 
-			//AlertMessage alertMessage = new AlertMessage();
+			// AlertMessage alertMessage = new AlertMessage();
 			if (e.getMessage().startsWith(Constants.ALARMIS_ALERT_XML_TAG)) {
 				alertMessage.setResponseMessage(e.getMessage());
 
-			} else if (alertMessage.getResponseMessage() != null && !alertMessage.getResponseMessage().isEmpty()){
-				log.info("ERROR ..." +alertMessage.getResponseMessage());
+			} else if (alertMessage.getResponseMessage() != null && !alertMessage.getResponseMessage().isEmpty()) {
+				log.info("ERROR ..." + alertMessage.getResponseMessage());
 				sendToClient = false;
-			}else {
+			} else {
 				alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_10);
 			}
-			if(sendToClient){
+			if (sendToClient) {
 				String responseLength = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH
 						+ alertMessage.getResponseMessage().length() + Constants.SKIP_LINE;
 
-				// juste pour le teste apres les deplyoiement sur eBRC, je vais dipluquer l'envoit de la version 
-				if(loaderConfigurationService.getConfigOfService().getActive()){
-					pw.print(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + alarmisVersion + Constants.SKIP_LINE);
-				}
-				pw.print(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + alarmisVersion + Constants.SKIP_LINE);
-				log.info("Send DATA : " + Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + alarmisVersion
-						+ Constants.SKIP_LINE);
+				String responseversion = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + alarmisVersion;
 
+				// juste pour le teste apres les deplyoiement sur eBRC, je vais
+				// dipluquer l'envoit de la version
+				if (loaderConfigurationService.getConfigOfService().getActive()) {
+					pw.print(responseversion + Constants.SKIP_LINE);
+				}
+				pw.print(responseversion + Constants.SKIP_LINE);
+				log.info("Send DATA : " + responseversion + Constants.SKIP_LINE);
 				pw.print(responseLength + Constants.SKIP_LINE);
-				log.info("Send DATA : " + responseLength);
+				log.info("Send DATA: " + responseLength);
 				pw.print(alertMessage.getResponseMessage() + Constants.SKIP_LINE);
-				log.info("Send DATA : " + alertMessage.getResponseMessage());
+				log.info("Send DATA: " + alertMessage.getResponseMessage());
 				pw.flush();
 				pw.close();
 			}
-		
 
 		}
 
