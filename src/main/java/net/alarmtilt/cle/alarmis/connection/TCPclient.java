@@ -25,25 +25,35 @@ public class TCPclient {
 
 	private void start() throws IOException {
 		String input;
-		while (true) {
+		BufferedReader br = null;
+		boolean endLoop = true;
+		boolean endSecondeLoop = true;
+		while (endLoop) {
 			input = " e-CLIPS: 1.1\n";
 			input += "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
 			input += "<message pwd=\"alatil222018\" sid=\"\" uid=\"alatil\" name=\"generic alert\" destination=\"AlarmTILT\">\n";
 			input += "<generic_alert account=\"8034\" event=\"ZA\" zone= \"11\" />\n";
 			input += "</message>\n";
 			PrintWriter out = new PrintWriter(this.socket.getOutputStream(), true);
-			BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			out.println(input);
 			out.flush();
-			br.readLine();
-			String dataLine;
-			while (true) {
+			out.close();
+			endLoop = false;
+			
+			// br.readLine();
+			String dataLine = null;
+			while (endSecondeLoop) {
 				while ((dataLine = br.readLine()) != null) {
 					System.out.println("Reçu data : " + dataLine);
+					if (br.ready())
+						endSecondeLoop = false;;
 
 				}
+				
 			}
-
+			
 		}
+		
 	}
 }
