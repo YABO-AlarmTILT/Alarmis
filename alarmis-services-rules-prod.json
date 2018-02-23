@@ -2,7 +2,7 @@
   	"service": "ALARMIS",
   	"portService": 20000,
   	"ipService": "127.0.0.1",
-  	"timeOut": 9000,
+  	"timeOut": 100000,
   	"eclipsVersion":"1.1",
   	"credentialClient": {
   		"uid": "alatil",

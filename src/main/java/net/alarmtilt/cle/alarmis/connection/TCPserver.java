@@ -24,37 +24,40 @@ public class TCPserver {
 	private static final Logger log = LoggerFactory.getLogger(TCPserver.class);
 	private static final int port = 20000;
 	private static final int timeOut = 2000;
+	private static final String version = "1.1";
 
-	@Autowired
-	BuildObjetMessageFactoryService buildObjetMessageFactoryService;
+	// @Autowired
+	// BuildObjetMessageFactoryService buildObjetMessageFactoryService;
 	@Autowired
 	AlarmisEventApiController alarmisEventApiController;
-	/**
-	 * 
-	 */
 	@Autowired
 	private LoaderConfigurationService loaderConfigurationService;
+	@Autowired
+	BuildObjetMessageFactoryService buildObjetMessageFactoryService;
 
 	public void startServer()
 
 	{
+
+		String supportedVesrion = loaderConfigurationService.getConfigOfService().getEclipsVersion().trim() != null
+				? loaderConfigurationService.getConfigOfService().getEclipsVersion().trim() : version;
+		Integer serverPort = loaderConfigurationService.getConfigOfService().getPortService() != null
+				? loaderConfigurationService.getConfigOfService().getPortService() : port;
+		Integer serverTimeOut = loaderConfigurationService.getConfigOfService().getTimeOut() != null
+				? loaderConfigurationService.getConfigOfService().getTimeOut() : timeOut;
 		try {
-			Integer serverPort = loaderConfigurationService.getConfigOfService().getPortService() != null
-					? loaderConfigurationService.getConfigOfService().getPortService() : port;
+
 			ServerSocket listenSocket = new ServerSocket(serverPort);
-
 			log.info("server start listening ... ... ... In port " + serverPort);
-
 			while (true) {
 				Socket clientSocket = listenSocket.accept();
-				clientSocket.setSoTimeout(loaderConfigurationService != null
-						? loaderConfigurationService.getConfigOfService().getTimeOut() : timeOut);
-				log.info("THE timeOut OF TCPserver  " + serverPort);
-				new Connection(clientSocket, buildObjetMessageFactoryService, alarmisEventApiController,
-						loaderConfigurationService);
+				clientSocket.setSoTimeout(serverTimeOut);
+				log.info("THE timeOut OF TCPserver  " + serverTimeOut);
+				new Connection(clientSocket, alarmisEventApiController, supportedVesrion,
+						buildObjetMessageFactoryService);
 			}
 		} catch (IOException e) {
-			log.info("Listen :" + e.getMessage());
+			log.error("Listen :" + e.getMessage());
 		}
 	}
 }
@@ -67,19 +70,16 @@ class Connection extends Thread {
 	BuildObjetMessageFactoryService buildObjetMessageFactoryService;
 	@Autowired
 	AlarmisEventApiController alarmisEventApiController;
-	@Autowired
-	private LoaderConfigurationService loaderConfigurationService;
+	private String supportedVesrion;
 	AlertMessage alertMessage = new AlertMessage();
 
-	public Connection(Socket aClientSocket, BuildObjetMessageFactoryService buildObjetMessageFactoryService,
-			AlarmisEventApiController alarmisEventApiController,
-			LoaderConfigurationService loaderConfigurationService) {
+	public Connection(Socket aClientSocket, AlarmisEventApiController alarmisEventApiController,
+			String supportedVesrion, BuildObjetMessageFactoryService buildObjetMessageFactoryService) {
 
 		this.clientSocket = aClientSocket;
-		this.buildObjetMessageFactoryService = buildObjetMessageFactoryService;
 		this.alarmisEventApiController = alarmisEventApiController;
-		this.loaderConfigurationService = loaderConfigurationService;
-
+		this.supportedVesrion = supportedVesrion;
+		this.buildObjetMessageFactoryService = buildObjetMessageFactoryService;
 		log.info("Connexion accept from client socket ....." + aClientSocket);
 		this.start();
 
@@ -92,17 +92,10 @@ class Connection extends Thread {
 	 */
 	public void run() {
 		PrintWriter pw = null;
-		String alarmisVersion = "";
+		String alarmisVersion = null;
 
 		try {
 			pw = new PrintWriter(clientSocket.getOutputStream(), true);
-		} catch (IOException e1) {
-			log.error("EOF:" + e1.getMessage());
-			e1.printStackTrace();
-		}
-
-		try {
-
 			// read data from client
 			BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 			// write to client
@@ -116,7 +109,8 @@ class Connection extends Thread {
 				StringBuffer sb = new StringBuffer();
 				StringBuffer sbMessage = new StringBuffer();
 
-				while ((dataLine = br.readLine()) != null) {
+				readByteFromClient: while ((dataLine = br.readLine()) != null) {
+
 					log.info("Reçu data : " + dataLine);
 					if (dataLine.contains(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS))
 						alarmisVersion = dataLine.substring(dataLine.lastIndexOf(":") + 1).trim();
@@ -125,39 +119,35 @@ class Connection extends Thread {
 						addToBuffer = true;
 					if (addToBuffer)
 						sb.append(dataLine);
-					if (!br.ready())
-						break;
+					if (!br.ready() || dataLine.equalsIgnoreCase(Constants.ALARMIS_ALERT_FORMAT_END_TAG))
+						break readByteFromClient;
+
 				}
 				log.info(
-						"************************************* END RECEIVING DATA FROM CLIENT*********************************************************");
+						"************************************* END RECEIVING DATA FROM CLIENT****************************************************");
 
 				if (alarmisVersion.isEmpty()) {
 					alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_4);
-					log.error("ERROR MESSAGE IS EMPTY .......");
+					log.warn("ERROR MESSAGE IS EMPTY .......");
 					throw new Exception(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_4);
 
-				} else if (!alarmisVersion
-						.equals(loaderConfigurationService.getConfigOfService().getEclipsVersion().trim())) {
+				} else if (!alarmisVersion.equals(supportedVesrion)) {
 					alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_8);
-					log.error("ERROR VERSION OF ECLIPS MESSENGER NOT SUPPORTED ..." + alarmisVersion);
+					log.warn("ERROR VERSION OF ECLIPS MESSENGER NOT SUPPORTED ..." + alarmisVersion);
 					throw new Exception(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_8);
 				}
 				log.info(
 						"************************************* SEND DATA FOR PARSING TO XML FILE*********************************************************");
-				alertMessage = buildObjetMessageFactoryService.parseXMLFile(sb.toString());
+				if (buildObjetMessageFactoryService != null)
+					alertMessage = buildObjetMessageFactoryService.parseXMLFile(sb.toString());
 				log.info("ALERT MESSAGE with alertMessageObject --> " + alertMessage.toString());
 
 				if (alertMessage != null && alertMessage.getResponseMessage() != null) {
 					String responseLength = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH
 							+ alertMessage.getResponseMessage().length();
 
-					String responseversion = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + alarmisVersion;
+					String responseversion = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + supportedVesrion;
 
-					// juste pour le teste apres les deplyoiement sur eBRC, je
-					// vais dipluquer l'envoit de la version
-					if (loaderConfigurationService.getConfigOfService().getActive()) {
-						pw.print(responseversion + Constants.SKIP_LINE);
-					}
 					pw.print(responseversion + Constants.SKIP_LINE);
 					log.info("Send DATA : " + responseversion);
 					pw.print(responseLength + Constants.SKIP_LINE);
@@ -187,7 +177,7 @@ class Connection extends Thread {
 				alertMessage.setResponseMessage(e.getMessage());
 
 			} else if (alertMessage.getResponseMessage() != null && !alertMessage.getResponseMessage().isEmpty()) {
-				log.info("ERROR ..." + alertMessage.getResponseMessage());
+				log.info(alertMessage.getResponseMessage());
 				sendToClient = false;
 			} else {
 				alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_10);
@@ -196,13 +186,7 @@ class Connection extends Thread {
 				String responseLength = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH
 						+ alertMessage.getResponseMessage().length() + Constants.SKIP_LINE;
 
-				String responseversion = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + alarmisVersion;
-
-				// juste pour le teste apres les deplyoiement sur eBRC, je vais
-				// dipluquer l'envoit de la version
-				if (loaderConfigurationService.getConfigOfService().getActive()) {
-					pw.print(responseversion + Constants.SKIP_LINE);
-				}
+				String responseversion = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + supportedVesrion;
 				pw.print(responseversion + Constants.SKIP_LINE);
 				log.info("Send DATA : " + responseversion + Constants.SKIP_LINE);
 				pw.print(responseLength + Constants.SKIP_LINE);

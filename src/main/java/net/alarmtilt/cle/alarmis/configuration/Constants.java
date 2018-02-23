@@ -17,6 +17,7 @@ public final class Constants {
 	
 	public static final String ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH = "Data-Length: ";
 	public static final String ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS = "e-CLIPS: ";
+	public static final String ALARMIS_ALERT_FORMAT_END_TAG = "</message>";
 	public static final String ALARMIS_ALERT_XML_TAG = "<?xml";
 	
 	

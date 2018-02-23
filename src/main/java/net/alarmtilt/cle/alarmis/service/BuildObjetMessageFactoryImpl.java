@@ -85,20 +85,20 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 
 					if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_PWD)
 							.equals(loaderConfigurationService.getConfigOfService().getCredentialClient().getPwd())) {
-						log.error("ERROR CREDENTIAL ALARMTILT PWD --> "
+						log.warn("WARN CREDENTIAL ALARMTILT PWD --> "
 								+ eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_PWD));
 						alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_3);
 					}
 
 					if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID)
 							.equals(loaderConfigurationService.getConfigOfService().getCredentialClient().getUid())) {
-						log.error("ERROR CREDENTIAL ALARMTILT UID --> "
+						log.warn("WARN CREDENTIAL ALARMTILT UID --> "
 								+ eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID));
 						alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_2);
 					}
 					if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID)
 							.equals(loaderConfigurationService.getConfigOfService().getCredentialClient().getUid())) {
-						log.error("ERROR CREDENTIAL ALARMTILT UID --> "
+						log.warn("WARN CREDENTIAL ALARMTILT UID --> "
 								+ eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID));
 						alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_2);
 					}
