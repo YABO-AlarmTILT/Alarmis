@@ -2,7 +2,7 @@
   	"service": "ALARMIS",
   	"portService": 20000,
   	"ipService": "127.0.0.1",
-  	"timeOut": 100000,
+  	"timeOut": 2000,
   	"eclipsVersion":"1.1",
   	"credentialClient": {
   		"uid": "alatil",
@@ -12,6 +12,6 @@
   	"uidAT":"alarmis.post@test.lu",
   	"pwdAT":"Alarmis2018$@",
   	"priority": 1,
-  	"active": false,
+  	"active": true,
   	"stage": null
   }]
