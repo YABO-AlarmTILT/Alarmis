@@ -26,6 +26,7 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<springfox-version>2.5.0</springfox-version>
 		<!--End : lines copied from the Swagger project -->
+		<sonar.exclusions>src/main/java/net/alarmtilt/cle/alarmis/client/**/*</sonar.exclusions>
 	</properties>
 
 	<dependencies>

@@ -22,12 +22,10 @@ import net.alarmtilt.cle.alarmis.service.BuildObjetMessageFactoryService;
 public class TCPserver {
 
 	private static final Logger log = LoggerFactory.getLogger(TCPserver.class);
-	private static final int port = 20000;
-	private static final int timeOut = 2000;
-	private static final String version = "1.1";
+	private static final int PORT = 20000;
+	private static final int TIMEOUT = 2000;
+	private static final String VERSION = "1.1";
 
-	// @Autowired
-	// BuildObjetMessageFactoryService buildObjetMessageFactoryService;
 	@Autowired
 	AlarmisEventApiController alarmisEventApiController;
 	@Autowired
@@ -38,27 +36,45 @@ public class TCPserver {
 	public void startServer()
 
 	{
+		Integer nbrConnexion = 0;
 
 		String supportedVesrion = loaderConfigurationService.getConfigOfService().getEclipsVersion().trim() != null
-				? loaderConfigurationService.getConfigOfService().getEclipsVersion().trim() : version;
+				? loaderConfigurationService.getConfigOfService().getEclipsVersion().trim() : VERSION;
 		Integer serverPort = loaderConfigurationService.getConfigOfService().getPortService() != null
-				? loaderConfigurationService.getConfigOfService().getPortService() : port;
+				? loaderConfigurationService.getConfigOfService().getPortService() : PORT;
 		Integer serverTimeOut = loaderConfigurationService.getConfigOfService().getTimeOut() != null
-				? loaderConfigurationService.getConfigOfService().getTimeOut() : timeOut;
-		try {
+				? loaderConfigurationService.getConfigOfService().getTimeOut() : TIMEOUT;
 
-			ServerSocket listenSocket = new ServerSocket(serverPort);
-			log.info("server start listening ... ... ... In port " + serverPort);
+		try (ServerSocket listenSocket = new ServerSocket(serverPort)) {
+
+			log.info("server start listening ... ... ... In port {}", listenSocket.getLocalPort());
+			log.info("local address of this server socket {}... ... ...  ", listenSocket.getInetAddress());
+			log.info("address of the endpoint this socket is bound to {}..... ", listenSocket.getLocalSocketAddress());
+			log.info("the server-socket channel associated with this socket {} ..... ", listenSocket.getChannel());
+			log.info("..........");
+
 			while (true) {
 				Socket clientSocket = listenSocket.accept();
 				clientSocket.setSoTimeout(serverTimeOut);
+				nbrConnexion++;
+
+				log.info("Client connected connexion number ... " + nbrConnexion);
+				log.info("local address to which the socket is bound ... " + clientSocket.getLocalAddress());
+				log.info("IP address to which this socket is connected ... " + clientSocket.getInetAddress());
 				log.info("THE timeOut OF TCPserver  " + serverTimeOut);
+				log.info("..........");
+
+				// create new socket connection in thread
 				new Connection(clientSocket, alarmisEventApiController, supportedVesrion,
 						buildObjetMessageFactoryService);
+				if (nbrConnexion > Integer.MAX_VALUE)
+					break;
+
 			}
 		} catch (IOException e) {
-			log.error("Listen :" + e.getMessage());
+			log.error("ERROR ... {}", e);
 		}
+
 	}
 }
 
@@ -80,7 +96,7 @@ class Connection extends Thread {
 		this.alarmisEventApiController = alarmisEventApiController;
 		this.supportedVesrion = supportedVesrion;
 		this.buildObjetMessageFactoryService = buildObjetMessageFactoryService;
-		log.info("Connexion accept from client socket ....." + aClientSocket);
+		log.info("Connexion accept from client socket ....." + aClientSocket.getInetAddress());
 		this.start();
 
 	}
@@ -91,88 +107,41 @@ class Connection extends Thread {
 	 * @see java.lang.Thread#run()
 	 */
 	public void run() {
-		PrintWriter pw = null;
-		String alarmisVersion = null;
 
+		BufferedReader br = null;
 		try {
-			pw = new PrintWriter(clientSocket.getOutputStream(), true);
-			// read data from client
-			BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-			// write to client
-			pw = new PrintWriter(clientSocket.getOutputStream(), true);
-			String IP = clientSocket.getRemoteSocketAddress().toString();
-			log.info("Connexion from IP : " + IP + " and port number : " + clientSocket.getLocalPort());
-			while (true) {
 
-				String dataLine;
-				boolean addToBuffer = false;
-				StringBuffer sb = new StringBuffer();
-				StringBuffer sbMessage = new StringBuffer();
+			br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+			StringBuffer sb = new StringBuffer();
 
-				readByteFromClient: while ((dataLine = br.readLine()) != null) {
-
-					log.info("Reçu data : " + dataLine);
-					if (dataLine.contains(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS))
-						alarmisVersion = dataLine.substring(dataLine.lastIndexOf(":") + 1).trim();
-					sbMessage.append(dataLine);
-					if (dataLine.startsWith(Constants.ALARMIS_ALERT_XML_TAG))
-						addToBuffer = true;
-					if (addToBuffer)
-						sb.append(dataLine);
-					if (!br.ready() || dataLine.equalsIgnoreCase(Constants.ALARMIS_ALERT_FORMAT_END_TAG))
-						break readByteFromClient;
-
-				}
-				log.info(
-						"************************************* END RECEIVING DATA FROM CLIENT****************************************************");
-
-				if (alarmisVersion.isEmpty()) {
-					alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_4);
-					log.warn("ERROR MESSAGE IS EMPTY .......");
-					throw new Exception(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_4);
-
-				} else if (!alarmisVersion.equals(supportedVesrion)) {
-					alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_8);
-					log.warn("ERROR VERSION OF ECLIPS MESSENGER NOT SUPPORTED ..." + alarmisVersion);
-					throw new Exception(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_8);
-				}
-				log.info(
-						"************************************* SEND DATA FOR PARSING TO XML FILE*********************************************************");
-				if (buildObjetMessageFactoryService != null)
-					alertMessage = buildObjetMessageFactoryService.parseXMLFile(sb.toString());
-				log.info("ALERT MESSAGE with alertMessageObject --> " + alertMessage.toString());
-
-				if (alertMessage != null && alertMessage.getResponseMessage() != null) {
-					String responseLength = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH
-							+ alertMessage.getResponseMessage().length();
-
-					String responseversion = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + supportedVesrion;
-
-					pw.print(responseversion + Constants.SKIP_LINE);
-					log.info("Send DATA : " + responseversion);
-					pw.print(responseLength + Constants.SKIP_LINE);
-					log.info("Send DATA : " + responseLength);
-					pw.print(Constants.SKIP_LINE);
-					pw.print(alertMessage.getResponseMessage() + Constants.SKIP_LINE);
-					log.info("Send DATA : " + alertMessage.getResponseMessage());
-
-					log.info("RESPONSE SENDED TO CLIENT -->  " + alertMessage.getResponseMessage());
-
-				}
-				pw.flush();
-				br.close();
-				pw.close();
-
-				if ((Constants.ALARMIS_ALERT_XML_RESPONSE_ACCEPT).equals(alertMessage.getResponseMessage()))
-					alarmisEventApiController.launchAlert(alertMessage);
-
+			while (br.ready()) {
+				char[] c = new char[] { 1024 };
+				br.read(c);
+				sb.append(c);
 			}
+			log.info("Reçu data :{} ", sb.toString());
+			if (sb.toString().contains(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH + 0))
+				throw new Exception(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_11);
+			// check alarmis version
+			checkAlarmisVersion(sb);
+
+			// build xml message
+			String xmlAlarme = getXmlAlarmeFromData(sb);
+
+			if (xmlAlarme != null) {
+				alertMessage = buildObjetMessageFactoryService.parseXMLFile(xmlAlarme);
+				log.info("ALERT MESSAGE with alertMessageObject --> {}", alertMessage);
+			}
+
+			if (alertMessage != null && alertMessage.getResponseMessage() != null)
+				responseToSend();
+
+			if ((Constants.ALARMIS_ALERT_XML_RESPONSE_ACCEPT).equals(alertMessage.getResponseMessage()))
+				alarmisEventApiController.launchAlert(alertMessage);
 
 		} catch (Exception e) {
 			boolean sendToClient = true;
 			log.error("EOF:" + e.getMessage());
-
-			// AlertMessage alertMessage = new AlertMessage();
 			if (e.getMessage().startsWith(Constants.ALARMIS_ALERT_XML_TAG)) {
 				alertMessage.setResponseMessage(e.getMessage());
 
@@ -182,29 +151,80 @@ class Connection extends Thread {
 			} else {
 				alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_10);
 			}
-			if (sendToClient) {
-				String responseLength = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH
-						+ alertMessage.getResponseMessage().length() + Constants.SKIP_LINE;
 
-				String responseversion = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + supportedVesrion;
-				pw.print(responseversion + Constants.SKIP_LINE);
-				log.info("Send DATA : " + responseversion + Constants.SKIP_LINE);
-				pw.print(responseLength + Constants.SKIP_LINE);
-				log.info("Send DATA: " + responseLength);
-				pw.print(alertMessage.getResponseMessage() + Constants.SKIP_LINE);
-				log.info("Send DATA: " + alertMessage.getResponseMessage());
-				pw.flush();
-				pw.close();
-			}
-
+			if (sendToClient)
+				responseToSend();
 		}
 
 		finally {
 			try {
+				br.close();
 				clientSocket.close();
 			} catch (IOException e) {
 				log.error("EOF:" + e.getMessage());
 			}
+		}
+
+	}
+
+	/**
+	 * Get version from data receiving exemple e-CLIPS: 1.1
+	 * 
+	 * @param sb
+	 * @throws Exception
+	 */
+	private void checkAlarmisVersion(StringBuffer sb) throws Exception {
+		// get alarmis version from data receiving
+		boolean isVersionSupported = sb.toString()
+				.contains(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + supportedVesrion);
+
+		if (!isVersionSupported) {
+			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_8);
+			log.warn("WARN VERSION OF ECLIPS MESSENGER NOT SUPPORTED ...");
+			throw new Exception(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_8);
+		}
+	}
+
+	/**
+	 * Get xml message from data receiving
+	 * 
+	 * @param sb
+	 * @return
+	 * @throws Exception
+	 */
+	private String getXmlAlarmeFromData(StringBuffer sb) throws Exception {
+		String getXmlMessage = null;
+		// get xml message from data receiving
+		getXmlMessage = sb.toString().contains(Constants.ALARMIS_ALERT_XML_TAG)
+				? sb.substring(sb.toString().lastIndexOf(Constants.ALARMIS_ALERT_XML_TAG)) : null;
+		log.info("XML message getting from client {}", getXmlMessage);
+
+		if (getXmlMessage == null) {
+			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_4);
+			log.warn("WARN MESSAGE THERE IS NO XML TAG");
+			throw new Exception(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_4);
+		}
+		return getXmlMessage;
+	}
+
+	private void responseToSend() {
+		try (PrintWriter pw = new PrintWriter(clientSocket.getOutputStream())) {
+
+			String responseversion = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + supportedVesrion;
+			String responseLength = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH
+					+ alertMessage.getResponseMessage().length();
+			pw.print(responseversion + Constants.SKIP_LINE);
+			log.info(Constants.ALARMIS_LOGGER_SEND_DATA, responseversion);
+			pw.print(responseLength + Constants.SKIP_LINE);
+			log.info(Constants.ALARMIS_LOGGER_SEND_DATA, responseLength);
+			pw.print(Constants.SKIP_LINE);
+			pw.print(alertMessage.getResponseMessage() + Constants.SKIP_LINE);
+			log.info(Constants.ALARMIS_LOGGER_SEND_DATA, alertMessage.getResponseMessage());
+
+			pw.flush();
+
+		} catch (IOException e) {
+			log.error("error {} ", e);
 		}
 
 	}

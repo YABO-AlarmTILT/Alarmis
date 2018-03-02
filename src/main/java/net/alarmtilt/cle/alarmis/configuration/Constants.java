@@ -3,7 +3,7 @@ package net.alarmtilt.cle.alarmis.configuration;
 public final class Constants {
 
 	public static final String ALARMIS_ALERT_XML_ROOT_NODE = "message";
-	public static final String ALARMIS_ALERT_XML_ATTRIBUT_PWD = "pwd";
+	public static final String ALARMIS_ALERT_XML_ATTRIBUT_MDP = "pwd";
 	public static final String ALARMIS_ALERT_XML_ATTRIBUT_SID = "sid";
 	public static final String ALARMIS_ALERT_XML_ATTRIBUT_UID = "uid";
 	public static final String ALARMIS_ALERT_XML_ATTRIBUT_NAME = "name";
@@ -12,6 +12,9 @@ public final class Constants {
 	public static final String ALARMIS_ALERT_XML_ATTRIBUT_ACCOUNT = "account";
 	public static final String ALARMIS_ALERT_XML_ATTRIBUT_EVENT = "event";
 	public static final String ALARMIS_ALERT_XML_ATTRIBUT_ZONE = "zone";
+	
+	
+	public static final String ALARMIS_LOGGER_SEND_DATA = "Send DATA : {}";
 	
 	
 	
@@ -35,12 +38,17 @@ public final class Constants {
 	public static final String ALARMIS_ALERT_XML_RESPONSE_REJECT_8 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><response result=\"reject\" errornum=\"8\" errortext=\"Version error\" />";
 	public static final String ALARMIS_ALERT_XML_RESPONSE_REJECT_9 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><response result=\"reject\" errornum=\"9\" errortext=\"Data length error\" />";
 	public static final String ALARMIS_ALERT_XML_RESPONSE_REJECT_10 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><response result=\"reject\" errornum=\"10\" errortext=\"Unknown session\" />";
+	public static final String ALARMIS_ALERT_XML_RESPONSE_REJECT_11 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><response result=\"reject\" errornum=\"11\" errortext=\"Message Empty\" />";
 
 	
 	
 	
 	public static final String ALARMIS_ALERT_XML_RESPONSE_ACCEPT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><response result=\"accept\" />";
 	public static final String ALARMIS_ALERT_XML_RESPONSE_ERROR = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><response result=\"error\" />";
+	
+	private  Constants() {
+		throw new IllegalStateException("Utility class");
+	}
 	
 	
 	

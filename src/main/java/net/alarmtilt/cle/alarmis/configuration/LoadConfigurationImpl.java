@@ -56,13 +56,13 @@ public class LoadConfigurationImpl implements LoaderConfigurationService {
 	@PostConstruct
 	public void loadServiceTable() throws IOException {
 		serviceConfigList = new ArrayList<>();
-		logger.info("--> link of Routing file : " + this.serviceConfigFileLink);
+		logger.info("--> link of Routing file : {}", serviceConfigFileLink);
 		RestTemplate restTemplate = new RestTemplate();
 		HttpEntity<String> request = new HttpEntity<>(getHeaders(MediaType.APPLICATION_JSON));
 		ResponseEntity<String> response = restTemplate.exchange(this.serviceConfigFileLink, HttpMethod.GET, request,
 				String.class);
-		logger.info("--> HTTP response code : " + response.getStatusCodeValue() + " returned by : "
-				+ this.serviceConfigFileLink);
+		logger.info("--> HTTP response code :{0}   returned by : {1} ", response.getStatusCodeValue(),
+				serviceConfigFileLink);
 		String contentFile = response.getBody();
 		// --- Start : Parsing the content returned by link of file
 		JsonParser parser = new JsonParser();
@@ -107,9 +107,10 @@ public class LoadConfigurationImpl implements LoaderConfigurationService {
 	}
 
 	/*
-	 * Return credential of Service 
-	 * (non-Javadoc)
-	 * @see net.alarmtilt.cle.alarmis.configuration.LoaderConfigurationService#getConfigOfService()
+	 * Return credential of Service (non-Javadoc)
+	 * 
+	 * @see net.alarmtilt.cle.alarmis.configuration.LoaderConfigurationService#
+	 * getConfigOfService()
 	 */
 	@Override
 	public ServiceConfig getConfigOfService() {
@@ -119,7 +120,7 @@ public class LoadConfigurationImpl implements LoaderConfigurationService {
 
 		return sc;
 	}
-	
+
 	/**
 	 * return higth priority provider
 	 * 
@@ -128,13 +129,13 @@ public class LoadConfigurationImpl implements LoaderConfigurationService {
 	 */
 	public List<ServiceConfig> getRoutesByPriority(List<ServiceConfig> ServiceConfigList) {
 		List<ServiceConfig> serviceConfigByPriority = new ArrayList<>();
-		logger.info("get routes by higth priority ..." );
-		//define low priority
-		Integer min=100;
+		logger.info("get routes by higth priority ...");
+		// define low priority
+		Integer min = 100;
 		for (ServiceConfig serviceConfig : ServiceConfigList) {
-			Integer currrent=serviceConfig.getPriority();
-			
-			if (serviceConfig.getPriority() < min ) {
+			Integer currrent = serviceConfig.getPriority();
+
+			if (serviceConfig.getPriority() < min) {
 				serviceConfigByPriority.removeAll(ServiceConfigList);
 				min = currrent;
 				serviceConfigByPriority.add(serviceConfig);

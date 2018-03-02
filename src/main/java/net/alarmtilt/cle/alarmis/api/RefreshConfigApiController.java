@@ -19,7 +19,6 @@ import com.google.gson.GsonBuilder;
 import net.alarmtilt.cle.alarmis.configuration.LoadConfigurationImpl;
 import net.alarmtilt.cle.alarmis.model.ServiceConfig;
 
-
 @Controller
 public class RefreshConfigApiController {
 
@@ -27,14 +26,13 @@ public class RefreshConfigApiController {
 	@Autowired
 	private LoadConfigurationImpl loadConfigurationImpl;
 
-
 	@RequestMapping(value = "/refreshseviceconfig", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> refreshServiceConfig() throws IOException {
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		loadConfigurationImpl.loadServiceTable();
 		List<ServiceConfig> serviceConfig = loadConfigurationImpl.getServiceConfigList();
 		String jsonServiceConfig = gson.toJson(serviceConfig);
-		logger.info("Service rules configuration ... " + jsonServiceConfig);
-		return new ResponseEntity<Object>(jsonServiceConfig, HttpStatus.OK);
+		logger.info("Service rules configuration: {} ", jsonServiceConfig);
+		return new ResponseEntity<>(jsonServiceConfig, HttpStatus.OK);
 	}
 }

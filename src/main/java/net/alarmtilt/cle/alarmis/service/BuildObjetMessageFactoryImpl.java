@@ -37,8 +37,8 @@ import net.alarmtilt.cle.alarmis.model.GenericAlert;
 public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactoryService {
 
 	private static final Logger log = LoggerFactory.getLogger(BuildObjetMessageFactoryImpl.class);
-	private static String FILE_PATH = "alarmisMsg";
-	private static String FILE_EXTENSION = "xml";
+	private static String filePath = "alarmisMsg";
+	private static String fileExtension = "xml";
 	@Autowired
 	private LoaderConfigurationService loaderConfigurationService;
 
@@ -82,29 +82,10 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 
 					Element eElement = (Element) nNode;
-
-					if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_PWD)
-							.equals(loaderConfigurationService.getConfigOfService().getCredentialClient().getPwd())) {
-						log.warn("WARN CREDENTIAL ALARMTILT PWD --> "
-								+ eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_PWD));
-						alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_3);
-					}
-
-					if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID)
-							.equals(loaderConfigurationService.getConfigOfService().getCredentialClient().getUid())) {
-						log.warn("WARN CREDENTIAL ALARMTILT UID --> "
-								+ eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID));
-						alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_2);
-					}
-					if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID)
-							.equals(loaderConfigurationService.getConfigOfService().getCredentialClient().getUid())) {
-						log.warn("WARN CREDENTIAL ALARMTILT UID --> "
-								+ eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID));
-						alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_2);
-					}
+					alertMessage = checkCredentail(eElement, alertMessage);
 
 					// Set AlertMessage
-					alertMessage.setPwd(eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_PWD));
+					alertMessage.setPwd(eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_MDP));
 					alertMessage.setSid(eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_SID));
 					alertMessage.setUid(eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID));
 					alertMessage.setName(eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_NAME));
@@ -125,10 +106,10 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 
 					if (alertMessage.getResponseMessage() == null) {
 						alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_ACCEPT);
-						log.info("ALERT IS READY TO RUN WITH ATTRIBUTE :  " + alertMessage.toString());
+						log.info("ALERT IS READY TO RUN WITH ATTRIBUTE :  {}", alertMessage);
 					} else {
-						log.info("ALERT IS NOT READY TO RUN  ATTRIBUTE :  " + alertMessage.toString()
-								+ "WITH RESPONSE -->  " + alertMessage.getResponseMessage());
+						log.info("ALERT IS NOT READY TO RUN  ATTRIBUTE : {0} WITH RESPONSE --> {1} ", alertMessage,
+								alertMessage.getResponseMessage());
 					}
 
 				}
@@ -136,14 +117,38 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 			log.info("END parsing Message from client .....");
 			return alertMessage;
 		} catch (Exception e) {
-			log.error("ERROR : " + e);
+			log.error("ERROR : {}", e);
 			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_6);
-			log.error("ERROR PARSING XML FILE .... WITH RESPONSE --> " + alertMessage.getResponseMessage());
+			log.error("ERROR PARSING XML FILE .... WITH RESPONSE --> {}", alertMessage.getResponseMessage());
 
 			log.error("END parsing Message from client with error .....");
 			return alertMessage;
 		}
 
+	}
+
+	private AlertMessage checkCredentail(Element eElement, AlertMessage alertMessage) {
+
+		if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_MDP)
+				.equals(loaderConfigurationService.getConfigOfService().getCredentialClient().getPwd())) {
+			log.warn("WARN CREDENTIAL ALARMTILT PWD -->{} ",
+					eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_MDP));
+			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_3);
+		}
+
+		if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID)
+				.equals(loaderConfigurationService.getConfigOfService().getCredentialClient().getUid())) {
+			log.warn("WARN CREDENTIAL ALARMTILT UID -->{} ",
+					eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID));
+			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_2);
+		}
+		if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID)
+				.equals(loaderConfigurationService.getConfigOfService().getCredentialClient().getUid())) {
+			log.warn("WARN CREDENTIAL ALARMTILT UID -->{} ",
+					eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID));
+			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_2);
+		}
+		return alertMessage;
 	}
 
 	private static File convertStringToDocument(String xmlStr) throws Exception {
@@ -173,14 +178,13 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 				// creating the directory failed
 				log.info("failed trying to create the directory");
 			}
-			File file = new File("AlertMessages/"+generateFileName());
+			File file = new File("AlertMessages/" + generateFileName());
 			Result dest = new StreamResult(file);
 			aTransformer.transform(src, dest);
 
 			return file;
 		} catch (Exception e) {
-			throw new Exception("ERROR IN CONVERTING STRING TO FILE : " + e);
-			// log.error("ERROR IN CONVERTING STRING TO FILE : " + e);
+			throw new Exception("ERROR IN CONVERTING STRING TO FILE :{} ", e);
 
 		}
 
@@ -193,8 +197,8 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 	 */
 	private static String generateFileName() {
 		DateFormat df = new SimpleDateFormat("yyyyMMddhhmmss");
-		String filename = FILE_PATH + df.format(new Date()) + "." + FILE_EXTENSION;
-		log.info("GENERATE FILE NAME ..... " + filename);
+		String filename = filePath + df.format(new Date()) + "." + fileExtension;
+		log.info("GENERATE FILE NAME {}..... ", filename);
 		return filename;
 	}
 }
