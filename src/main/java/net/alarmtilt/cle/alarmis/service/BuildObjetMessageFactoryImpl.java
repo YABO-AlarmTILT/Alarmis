@@ -57,17 +57,14 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 		AlertMessage alertMessage = new AlertMessage();
 		GenericAlert genericAlert = new GenericAlert();
 		try {
-			File fXmlFile = null;
-			fXmlFile = convertStringToDocument(xmlStr);
-
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder;
 
 			dBuilder = dbFactory.newDocumentBuilder();
 
-			Document doc;
-
-			doc = dBuilder.parse(fXmlFile);
+			InputSource is = new InputSource(new StringReader(xmlStr));
+			Document doc = dBuilder.parse(is);
+			
 
 			doc.getDocumentElement().normalize();
 
@@ -108,7 +105,7 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 						alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_ACCEPT);
 						log.info("ALERT IS READY TO RUN WITH ATTRIBUTE :  {}", alertMessage);
 					} else {
-						log.info("ALERT IS NOT READY TO RUN  ATTRIBUTE : {0} WITH RESPONSE --> {1} ", alertMessage,
+						log.info("ALERT IS NOT READY TO RUN  ATTRIBUTE : {} WITH RESPONSE --> {} ", alertMessage,
 								alertMessage.getResponseMessage());
 					}
 
@@ -151,6 +148,8 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 		return alertMessage;
 	}
 
+	
+	@SuppressWarnings("unused")
 	private static File convertStringToDocument(String xmlStr) throws Exception {
 
 		log.info("CONVERT STRING TO FILE ..... STRING --> ", xmlStr);

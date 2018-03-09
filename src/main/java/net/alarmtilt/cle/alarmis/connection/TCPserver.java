@@ -14,39 +14,28 @@ import org.springframework.stereotype.Component;
 
 import net.alarmtilt.cle.alarmis.api.AlarmisEventApiController;
 import net.alarmtilt.cle.alarmis.configuration.Constants;
-import net.alarmtilt.cle.alarmis.configuration.LoaderConfigurationService;
 import net.alarmtilt.cle.alarmis.model.AlertMessage;
 import net.alarmtilt.cle.alarmis.service.BuildObjetMessageFactoryService;
 
 @Component
-public class TCPserver {
+public class TCPserver extends Thread {
 
 	private static final Logger log = LoggerFactory.getLogger(TCPserver.class);
 	private static final int PORT = 20000;
 	private static final int TIMEOUT = 2000;
-	private static final String VERSION = "1.1";
 
 	@Autowired
 	AlarmisEventApiController alarmisEventApiController;
 	@Autowired
-	private LoaderConfigurationService loaderConfigurationService;
-	@Autowired
 	BuildObjetMessageFactoryService buildObjetMessageFactoryService;
 
-	public void startServer()
-
-	{
+	@Override
+	public void run() {
 		Integer nbrConnexion = 0;
 
-		String supportedVesrion = loaderConfigurationService.getConfigOfService().getEclipsVersion().trim() != null
-				? loaderConfigurationService.getConfigOfService().getEclipsVersion().trim() : VERSION;
-		Integer serverPort = loaderConfigurationService.getConfigOfService().getPortService() != null
-				? loaderConfigurationService.getConfigOfService().getPortService() : PORT;
-		Integer serverTimeOut = loaderConfigurationService.getConfigOfService().getTimeOut() != null
-				? loaderConfigurationService.getConfigOfService().getTimeOut() : TIMEOUT;
-
-		try (ServerSocket listenSocket = new ServerSocket(serverPort)) {
-
+		try {
+			ServerSocket listenSocket = new ServerSocket(PORT);
+			log.info("I'm in server instance ....Current Thread : {}", Thread.currentThread().getName());
 			log.info("server start listening ... ... ... In port {}", listenSocket.getLocalPort());
 			log.info("local address of this server socket {}... ... ...  ", listenSocket.getInetAddress());
 			log.info("address of the endpoint this socket is bound to {}..... ", listenSocket.getLocalSocketAddress());
@@ -55,50 +44,41 @@ public class TCPserver {
 
 			while (true) {
 				Socket clientSocket = listenSocket.accept();
-				clientSocket.setSoTimeout(serverTimeOut);
+				clientSocket.setSoTimeout(TIMEOUT);
 				nbrConnexion++;
 
 				log.info("Client connected connexion number ... " + nbrConnexion);
 				log.info("local address to which the socket is bound ... " + clientSocket.getLocalAddress());
 				log.info("IP address to which this socket is connected ... " + clientSocket.getInetAddress());
-				log.info("THE timeOut OF TCPserver  " + serverTimeOut);
+				log.info("THE timeOut OF TCPserver " + TIMEOUT);
 				log.info("..........");
 
 				// create new socket connection in thread
-				new Connection(clientSocket, alarmisEventApiController, supportedVesrion,
-						buildObjetMessageFactoryService);
-				if (nbrConnexion > Integer.MAX_VALUE)
-					break;
+				new Connection(clientSocket, alarmisEventApiController, buildObjetMessageFactoryService).start();
 
 			}
 		} catch (IOException e) {
 			log.error("ERROR ... {}", e);
+			log.error("May be port {} busy.",PORT);
 		}
-
 	}
+
 }
 
 class Connection extends Thread {
 
 	private static final Logger log = LoggerFactory.getLogger(Connection.class);
 	Socket clientSocket;
-	@Autowired
 	BuildObjetMessageFactoryService buildObjetMessageFactoryService;
-	@Autowired
 	AlarmisEventApiController alarmisEventApiController;
-	private String supportedVesrion;
-	AlertMessage alertMessage = new AlertMessage();
+	// private String supportedVesrion;
 
 	public Connection(Socket aClientSocket, AlarmisEventApiController alarmisEventApiController,
-			String supportedVesrion, BuildObjetMessageFactoryService buildObjetMessageFactoryService) {
-
+			BuildObjetMessageFactoryService buildObjetMessageFactoryService) {
+		super();
 		this.clientSocket = aClientSocket;
 		this.alarmisEventApiController = alarmisEventApiController;
-		this.supportedVesrion = supportedVesrion;
 		this.buildObjetMessageFactoryService = buildObjetMessageFactoryService;
-		log.info("Connexion accept from client socket ....." + aClientSocket.getInetAddress());
-		this.start();
-
 	}
 
 	/*
@@ -107,37 +87,39 @@ class Connection extends Thread {
 	 * @see java.lang.Thread#run()
 	 */
 	public void run() {
-
-		BufferedReader br = null;
+		log.info("I'm in connection run ..... Current Thread :  {}", Thread.currentThread().getName());
+		AlertMessage alertMessage = new AlertMessage();
 		try {
 
-			br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-			StringBuffer sb = new StringBuffer();
+			while (true) {
+				BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+				StringBuffer sb = new StringBuffer();
+				while (br.ready()) {
+					char[] c = new char[] { 1024 };
+					br.read(c);
+					sb.append(c);
+				}
+				log.info("GET data :{} ", sb.toString());
+				if (sb.toString().contains(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH + 0))
+					throw new Exception(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_11);
+				// check alarmis version
+				checkAlarmisVersion(sb, alertMessage);
 
-			while (br.ready()) {
-				char[] c = new char[] { 1024 };
-				br.read(c);
-				sb.append(c);
+				// build xml message
+				String xmlAlarme = getXmlAlarmeFromData(sb, alertMessage);
+
+				if (xmlAlarme != null) {
+					alertMessage = buildObjetMessageFactoryService.parseXMLFile(xmlAlarme);
+					log.info("ALERT MESSAGE with alertMessageObject --> {}", alertMessage);
+				}
+
+				if (alertMessage != null && alertMessage.getResponseMessage() != null)
+					responseToSend(alertMessage, clientSocket);
+
+				if ((Constants.ALARMIS_ALERT_XML_RESPONSE_ACCEPT).equals(alertMessage.getResponseMessage()))
+					alarmisEventApiController.launchAlert(alertMessage);
+
 			}
-			log.info("Reçu data :{} ", sb.toString());
-			if (sb.toString().contains(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH + 0))
-				throw new Exception(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_11);
-			// check alarmis version
-			checkAlarmisVersion(sb);
-
-			// build xml message
-			String xmlAlarme = getXmlAlarmeFromData(sb);
-
-			if (xmlAlarme != null) {
-				alertMessage = buildObjetMessageFactoryService.parseXMLFile(xmlAlarme);
-				log.info("ALERT MESSAGE with alertMessageObject --> {}", alertMessage);
-			}
-
-			if (alertMessage != null && alertMessage.getResponseMessage() != null)
-				responseToSend();
-
-			if ((Constants.ALARMIS_ALERT_XML_RESPONSE_ACCEPT).equals(alertMessage.getResponseMessage()))
-				alarmisEventApiController.launchAlert(alertMessage);
 
 		} catch (Exception e) {
 			boolean sendToClient = true;
@@ -153,12 +135,12 @@ class Connection extends Thread {
 			}
 
 			if (sendToClient)
-				responseToSend();
+				responseToSend(alertMessage, clientSocket);
 		}
 
 		finally {
 			try {
-				br.close();
+
 				clientSocket.close();
 			} catch (IOException e) {
 				log.error("EOF:" + e.getMessage());
@@ -173,10 +155,11 @@ class Connection extends Thread {
 	 * @param sb
 	 * @throws Exception
 	 */
-	private void checkAlarmisVersion(StringBuffer sb) throws Exception {
+	private void checkAlarmisVersion(StringBuffer sb, AlertMessage alertMessage) throws Exception {
+
 		// get alarmis version from data receiving
 		boolean isVersionSupported = sb.toString()
-				.contains(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + supportedVesrion);
+				.contains(Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + "1.1");
 
 		if (!isVersionSupported) {
 			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_8);
@@ -192,7 +175,7 @@ class Connection extends Thread {
 	 * @return
 	 * @throws Exception
 	 */
-	private String getXmlAlarmeFromData(StringBuffer sb) throws Exception {
+	private String getXmlAlarmeFromData(StringBuffer sb, AlertMessage alertMessage) throws Exception {
 		String getXmlMessage = null;
 		// get xml message from data receiving
 		getXmlMessage = sb.toString().contains(Constants.ALARMIS_ALERT_XML_TAG)
@@ -207,10 +190,10 @@ class Connection extends Thread {
 		return getXmlMessage;
 	}
 
-	private void responseToSend() {
+	private void responseToSend(AlertMessage alertMessage, Socket clientSocket) {
 		try (PrintWriter pw = new PrintWriter(clientSocket.getOutputStream())) {
 
-			String responseversion = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + supportedVesrion;
+			String responseversion = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_VERSION_ECLIPS + "1.1";
 			String responseLength = Constants.ALARMIS_ALERT_FORMAT_RESPONSE_DATA_LENGTH
 					+ alertMessage.getResponseMessage().length();
 			pw.print(responseversion + Constants.SKIP_LINE);
@@ -222,6 +205,9 @@ class Connection extends Thread {
 			log.info(Constants.ALARMIS_LOGGER_SEND_DATA, alertMessage.getResponseMessage());
 
 			pw.flush();
+			pw.close();
+			clientSocket.close();
+			log.info("Print writer and socket closed, Thread-{}", Thread.currentThread().getName());
 
 		} catch (IOException e) {
 			log.error("error {} ", e);

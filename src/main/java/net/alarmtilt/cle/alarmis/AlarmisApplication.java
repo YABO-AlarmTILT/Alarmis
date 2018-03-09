@@ -12,10 +12,11 @@ public class AlarmisApplication {
 
 	@Value("${server.port}")
 	private int port;
+	
 
 	public static void main(String[] args) {
 		ConfigurableApplicationContext context = SpringApplication.run(AlarmisApplication.class, args);
 		TCPserver tcpServer = context.getBean(TCPserver.class);
-		tcpServer.startServer();
+		tcpServer.start();
 	}
 }

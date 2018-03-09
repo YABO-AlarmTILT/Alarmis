@@ -61,7 +61,7 @@ public class LoadConfigurationImpl implements LoaderConfigurationService {
 		HttpEntity<String> request = new HttpEntity<>(getHeaders(MediaType.APPLICATION_JSON));
 		ResponseEntity<String> response = restTemplate.exchange(this.serviceConfigFileLink, HttpMethod.GET, request,
 				String.class);
-		logger.info("--> HTTP response code :{0}   returned by : {1} ", response.getStatusCodeValue(),
+		logger.info("--> HTTP response code :{}   returned by : {} ", response.getStatusCodeValue(),
 				serviceConfigFileLink);
 		String contentFile = response.getBody();
 		// --- Start : Parsing the content returned by link of file
