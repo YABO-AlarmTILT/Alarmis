@@ -15,6 +15,6 @@
 		"priority": 1,
 		"active": true,
 		"stage": "prod",
-		"nbrOfRetry": 4
+		"nbrOfRetry": 6
 	}
 ]
