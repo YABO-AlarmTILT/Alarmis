@@ -4,7 +4,6 @@ import net.alarmtilt.cle.alarmis.model.AlertMessage;
 
 public interface BuildObjetMessageFactoryService {
 
-
 	AlertMessage parseXMLFile(String fXmlStr);
 
 }

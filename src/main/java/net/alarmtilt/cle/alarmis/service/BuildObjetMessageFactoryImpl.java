@@ -114,6 +114,7 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 			log.info("END parsing Message from client .....");
 			return alertMessage;
 		} catch (Exception e) {
+			e.printStackTrace();
 			log.error("ERROR : {}", e);
 			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_6);
 			log.error("ERROR PARSING XML FILE .... WITH RESPONSE --> {}", alertMessage.getResponseMessage());

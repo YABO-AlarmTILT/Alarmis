@@ -13,6 +13,16 @@ public class ServiceConfig {
 	Integer priority;
 	Boolean active;
 	String stage;
+	Integer nbrOfRetry;
+	
+	
+	
+	public Integer getNbrOfRetry() {
+		return nbrOfRetry;
+	}
+	public void setNbrOfRetry(Integer nbrOfRetry) {
+		this.nbrOfRetry = nbrOfRetry;
+	}
 	public String getService() {
 		return service;
 	}
@@ -84,7 +94,8 @@ public class ServiceConfig {
 		return "ServiceConfig [service=" + service + ", portService=" + portService + ", ipService=" + ipService
 				+ ", timeOut=" + timeOut + ", eclipsVersion=" + eclipsVersion + ", credentialClient=" + credentialClient
 				+ ", uidAT=" + uidAT + ", pwdAT=" + pwdAT + ", priority=" + priority + ", active=" + active + ", stage="
-				+ stage + "]";
+				+ stage + ", nbrOfRetry=" + nbrOfRetry + "]";
 	}
+
 
 }
