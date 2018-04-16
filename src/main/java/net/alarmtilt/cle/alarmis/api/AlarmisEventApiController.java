@@ -36,10 +36,10 @@ public class AlarmisEventApiController {
 
 			AuthParam authParam = new AuthParam();
 
-			authParam.setAuthDn(loaderConfigurationService.getConfigOfService().getUidAT().trim());
-			log.info("AlarmTILT Credential UID : " + loaderConfigurationService.getConfigOfService().getUidAT().trim());
-			authParam.setAuthPw(loaderConfigurationService.getConfigOfService().getPwdAT().trim());
-			log.info("AlarmTILT Credential PWD : " + loaderConfigurationService.getConfigOfService().getPwdAT().trim());
+			authParam.setAuthDn(loaderConfigurationService.getConfigOfService().getCredentialClientlist().get(0).getUidAT().trim());
+			log.info("AlarmTILT Credential UID : {}" , loaderConfigurationService.getConfigOfService().getCredentialClientlist().get(0).getUidAT().trim());
+			authParam.setAuthPw(loaderConfigurationService.getConfigOfService().getCredentialClientlist().get(0).getPwdAT().trim());
+			log.info("AlarmTILT Credential PWD : {}" , loaderConfigurationService.getConfigOfService().getCredentialClientlist().get(0).getPwdAT().trim());
 			authParam.setAuthType(AUTH_TYPE);
 			authParam.setAuthRole(AuthRoleEnum.PROCEDURE_LAUNCHER);
 

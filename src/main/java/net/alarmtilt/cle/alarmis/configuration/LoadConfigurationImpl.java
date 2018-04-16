@@ -106,12 +106,6 @@ public class LoadConfigurationImpl implements LoaderConfigurationService {
 		return headers;
 	}
 
-	/*
-	 * Return credential of Service (non-Javadoc)
-	 * 
-	 * @see net.alarmtilt.cle.alarmis.configuration.LoaderConfigurationService#
-	 * getConfigOfService()
-	 */
 	@Override
 	public ServiceConfig getConfigOfService() {
 
@@ -119,29 +113,6 @@ public class LoadConfigurationImpl implements LoaderConfigurationService {
 		sc = this.getServiceConfigList().get(0);
 
 		return sc;
-	}
-
-	/**
-	 * return higth priority provider
-	 * 
-	 * @param voiceRoutes
-	 * @return
-	 */
-	public List<ServiceConfig> getRoutesByPriority(List<ServiceConfig> ServiceConfigList) {
-		List<ServiceConfig> serviceConfigByPriority = new ArrayList<>();
-		logger.info("get routes by higth priority ...");
-		// define low priority
-		Integer min = 100;
-		for (ServiceConfig serviceConfig : ServiceConfigList) {
-			Integer currrent = serviceConfig.getPriority();
-
-			if (serviceConfig.getPriority() < min) {
-				serviceConfigByPriority.removeAll(ServiceConfigList);
-				min = currrent;
-				serviceConfigByPriority.add(serviceConfig);
-			}
-		}
-		return serviceConfigByPriority;
 	}
 
 }
