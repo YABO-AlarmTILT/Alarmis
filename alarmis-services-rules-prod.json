@@ -1,32 +1,47 @@
  
 	{
-		"service": "ALARMIS",
-		"portService": 20000,
-		"timeOut": 5000,
-		"eclipsVersion": "1.1",
-		"nbrOfRetry": 4,
-		"credentialClientlist": [
-			{
-				"uid": "alatil",
-				"pwd": "alatil2018",
-				"account": "8034",
-				"uidAT": "alarmis.post@test.lu",
-				"pwdAT": "Alarmis2018$@"
-			},
-			{
-				"uid": "alatil",
-				"pwd": "alatil2018",
-				"account": "8034",
-				"uidAT": "alarmis.post@test.lu",
-				"pwdAT": "Alarmis2018$@"
-			},
-			{
-				"uid": "alatil",
-				"pwd": "alatil2018",
-				"account": "8034",
-				"uidAT": "alarmis.post@test.lu",
-				"pwdAT": "Alarmis2018$@"
-			}
-		]
-	}
+	"service": "ALARMIS",
+	"portService": 20000,
+	"timeOut": 5000,
+	"eclipsVersion": "1.1",
+	"nbrOfRetry": 4,
+	"credentialClientlist": [
+		{
+			"uid": "alatil",
+			"pwd": "alatil2018",
+			"account": null,
+			"zone": null,
+			"event": null,
+			"uidAT": "alarmis.post@test.lu",
+			"pwdAT": "Alarmis2018$@"
+		},
+		{
+			"uid": "alatil1",
+			"pwd": "alatil2018",
+			"account": "8035",
+			"zone": null,
+			"event": null,
+			"uidAT": "alarmis.post@test.lu",
+			"pwdAT": "Alarmis2018$@"
+		},
+		{
+			"uid": "alatil2",
+			"pwd": "alatil2019",
+			"account": null,
+			"zone": "11",
+			"event": null,
+			"uidAT": "alarmis.post@test.lu",
+			"pwdAT": "Alarmis2018$@"
+		},
+		{
+			"uid": "alatil2",
+			"pwd": "alatil2019",
+			"account": null,
+			"zone": null,
+			"event": "ZA",
+			"uidAT": "alarmis.post@test.lu",
+			"pwdAT": "Alarmis2018$@"
+		}
+	]
+}
 
