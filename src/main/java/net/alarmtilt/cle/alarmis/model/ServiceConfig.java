@@ -1,28 +1,15 @@
 package net.alarmtilt.cle.alarmis.model;
 
+import java.util.ArrayList;
+
 public class ServiceConfig {
 
 	String service;
 	Integer portService;
-	String ipService;
 	Integer timeOut;
 	String eclipsVersion;
-	CredentialClient credentialClient;
-	String uidAT;
-	String pwdAT;
-	Integer priority;
-	Boolean active;
-	String stage;
+	ArrayList<CredentialClient> credentialClientlist = new ArrayList<>();
 	Integer nbrOfRetry;
-	
-	
-	
-	public Integer getNbrOfRetry() {
-		return nbrOfRetry;
-	}
-	public void setNbrOfRetry(Integer nbrOfRetry) {
-		this.nbrOfRetry = nbrOfRetry;
-	}
 	public String getService() {
 		return service;
 	}
@@ -34,12 +21,6 @@ public class ServiceConfig {
 	}
 	public void setPortService(Integer portService) {
 		this.portService = portService;
-	}
-	public String getIpService() {
-		return ipService;
-	}
-	public void setIpService(String ipService) {
-		this.ipService = ipService;
 	}
 	public Integer getTimeOut() {
 		return timeOut;
@@ -53,49 +34,78 @@ public class ServiceConfig {
 	public void setEclipsVersion(String eclipsVersion) {
 		this.eclipsVersion = eclipsVersion;
 	}
-	public CredentialClient getCredentialClient() {
-		return credentialClient;
+	public ArrayList<CredentialClient> getCredentialClientlist() {
+		return credentialClientlist;
 	}
-	public void setCredentialClient(CredentialClient credentialClient) {
-		this.credentialClient = credentialClient;
+	public void setCredentialClientlist(ArrayList<CredentialClient> credentialClientlist) {
+		this.credentialClientlist = credentialClientlist;
 	}
-	public String getUidAT() {
-		return uidAT;
+	public Integer getNbrOfRetry() {
+		return nbrOfRetry;
 	}
-	public void setUidAT(String uidAT) {
-		this.uidAT = uidAT;
+	public void setNbrOfRetry(Integer nbrOfRetry) {
+		this.nbrOfRetry = nbrOfRetry;
 	}
-	public String getPwdAT() {
-		return pwdAT;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((credentialClientlist == null) ? 0 : credentialClientlist.hashCode());
+		result = prime * result + ((eclipsVersion == null) ? 0 : eclipsVersion.hashCode());
+		result = prime * result + ((nbrOfRetry == null) ? 0 : nbrOfRetry.hashCode());
+		result = prime * result + ((portService == null) ? 0 : portService.hashCode());
+		result = prime * result + ((service == null) ? 0 : service.hashCode());
+		result = prime * result + ((timeOut == null) ? 0 : timeOut.hashCode());
+		return result;
 	}
-	public void setPwdAT(String pwdAT) {
-		this.pwdAT = pwdAT;
-	}
-	public Integer getPriority() {
-		return priority;
-	}
-	public void setPriority(Integer priority) {
-		this.priority = priority;
-	}
-	public Boolean getActive() {
-		return active;
-	}
-	public void setActive(Boolean active) {
-		this.active = active;
-	}
-	public String getStage() {
-		return stage;
-	}
-	public void setStage(String stage) {
-		this.stage = stage;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ServiceConfig other = (ServiceConfig) obj;
+		if (credentialClientlist == null) {
+			if (other.credentialClientlist != null)
+				return false;
+		} else if (!credentialClientlist.equals(other.credentialClientlist))
+			return false;
+		if (eclipsVersion == null) {
+			if (other.eclipsVersion != null)
+				return false;
+		} else if (!eclipsVersion.equals(other.eclipsVersion))
+			return false;
+		if (nbrOfRetry == null) {
+			if (other.nbrOfRetry != null)
+				return false;
+		} else if (!nbrOfRetry.equals(other.nbrOfRetry))
+			return false;
+		if (portService == null) {
+			if (other.portService != null)
+				return false;
+		} else if (!portService.equals(other.portService))
+			return false;
+		if (service == null) {
+			if (other.service != null)
+				return false;
+		} else if (!service.equals(other.service))
+			return false;
+		if (timeOut == null) {
+			if (other.timeOut != null)
+				return false;
+		} else if (!timeOut.equals(other.timeOut))
+			return false;
+		return true;
 	}
 	@Override
 	public String toString() {
-		return "ServiceConfig [service=" + service + ", portService=" + portService + ", ipService=" + ipService
-				+ ", timeOut=" + timeOut + ", eclipsVersion=" + eclipsVersion + ", credentialClient=" + credentialClient
-				+ ", uidAT=" + uidAT + ", pwdAT=" + pwdAT + ", priority=" + priority + ", active=" + active + ", stage="
-				+ stage + ", nbrOfRetry=" + nbrOfRetry + "]";
+		return "ServiceConfig [service=" + service + ", portService=" + portService + ", timeOut=" + timeOut
+				+ ", eclipsVersion=" + eclipsVersion + ", credentialClientlist=" + credentialClientlist
+				+ ", nbrOfRetry=" + nbrOfRetry + "]";
 	}
-
+	
+	
 
 }

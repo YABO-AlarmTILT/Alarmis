@@ -128,20 +128,20 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 	private AlertMessage checkCredentail(Element eElement, AlertMessage alertMessage) {
 
 		if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_MDP)
-				.equals(loaderConfigurationService.getConfigOfService().getCredentialClient().getPwd())) {
+				.equals(loaderConfigurationService.getConfigOfService().getCredentialClientlist().get(0).getPwd())) {
 			log.warn("WARN CREDENTIAL ALARMTILT PWD -->{} ",
 					eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_MDP));
 			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_3);
 		}
 
 		if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID)
-				.equals(loaderConfigurationService.getConfigOfService().getCredentialClient().getUid())) {
+				.equals(loaderConfigurationService.getConfigOfService().getCredentialClientlist().get(0).getUid())) {
 			log.warn("WARN CREDENTIAL ALARMTILT UID -->{} ",
 					eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID));
 			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_2);
 		}
 		if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID)
-				.equals(loaderConfigurationService.getConfigOfService().getCredentialClient().getUid())) {
+				.equals(loaderConfigurationService.getConfigOfService().getCredentialClientlist().get(0).getUid())) {
 			log.warn("WARN CREDENTIAL ALARMTILT UID -->{} ",
 					eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID));
 			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_2);
