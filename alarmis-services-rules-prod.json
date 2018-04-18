@@ -8,7 +8,7 @@
 	"credentialClientlist": [
 		{
 			"uid": "alatil",
-			"pwd": "alatil2018",
+			"pwd": "alatil1",
 			"account": null,
 			"zone": null,
 			"event": null,
@@ -16,13 +16,44 @@
 			"pwdAT": "Alarmis2018$@"
 		},
 		{
+
 			"uid": "alatil",
-			"pwd": "alatil20182",
+			"pwd": "alatil2",
 			"account": null,
 			"zone": null,
 			"event": null,
 			"uidAT": "tdevgea@test.fr",
 			"pwdAT": "tdevgeapw"
+		},
+		{
+
+			"uid": "alatil",
+			"pwd": "alatil3",
+			"account": null,
+			"zone": null,
+			"event": null,
+			"uidAT": "betotest1000adm@test.fr",
+			"pwdAT": "betotest1000adm@test.fr"
+		},
+		{
+
+			"uid": "alatil",
+			"pwd": "alatil4",
+			"account": null,
+			"zone": null,
+			"event": null,
+			"uidAT": "beto.subone@test.fr",
+			"pwdAT": "beto.subone@test.fr"
+		},
+		{
+
+			"uid": "alatil",
+			"pwd": "alatil5",
+			"account": null,
+			"zone": null,
+			"event": null,
+			"uidAT": "beto.subtwo@test.fr",
+			"pwdAT": "beto.subtwo@test.fr"
 		}
 	]
 }

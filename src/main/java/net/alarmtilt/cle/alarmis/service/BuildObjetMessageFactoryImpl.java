@@ -30,7 +30,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import net.alarmtilt.cle.alarmis.configuration.Constants;
-import net.alarmtilt.cle.alarmis.configuration.LoaderConfigurationImpl;
+import net.alarmtilt.cle.alarmis.configuration.LoaderConfigurationService;
 import net.alarmtilt.cle.alarmis.model.AlertMessage;
 import net.alarmtilt.cle.alarmis.model.CredentialClient;
 import net.alarmtilt.cle.alarmis.model.GenericAlert;
@@ -42,7 +42,7 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 	private static String filePath = "alarmisMsg";
 	private static String fileExtension = "xml";
 	@Autowired
-	private LoaderConfigurationImpl loaderConfigurationService;
+	private LoaderConfigurationService loaderConfigurationService;
 	private CredentialClient credentialClient;
 
 	/**
@@ -101,7 +101,8 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 							.getAttributes().getNamedItem(Constants.ALARMIS_ALERT_XML_ATTRIBUT_EVENT).getNodeValue());
 					// Set generic Alert
 					alertMessage.setGenericAlert(genericAlert);
-					alertMessage = checkCredentail(eElement, alertMessage);
+					
+					alertMessage = checkCredentail(alertMessage);
 
 					if (alertMessage.getResponseMessage() == null) {
 						alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_ACCEPT);
@@ -127,21 +128,25 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 
 	}
 
-	private AlertMessage checkCredentail(Element eElement, AlertMessage alertMessage) {
-		credentialClient = getCredentialClient(eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID),
-				eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_MDP),
+	/**
+	 * Check  credential client
+	 * @param alertMessage
+	 * @return
+	 */
+	private AlertMessage checkCredentail(AlertMessage alertMessage) {
+		credentialClient = getCredentialClient(alertMessage.getUid(), alertMessage.getPwd(),
 				alertMessage.getGenericAlert().getAccount(), alertMessage.getGenericAlert().getZone(),
 				alertMessage.getGenericAlert().getEvent());
 
 		if (credentialClient != null) {
-			if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_MDP).equals(credentialClient.getPwd())) {
-				log.warn("WARN CREDENTIAL ALARMTILT PWD -->{} ",
-						eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_MDP));
+
+			loaderConfigurationService.setCurrentCredentialClient(credentialClient);
+			if (!alertMessage.getPwd().equals(credentialClient.getPwd())) {
+				log.warn("WARN CREDENTIAL ALARMTILT PWD -->{} ", alertMessage.getPwd());
 				alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_3);
 			}
-			if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID).equals(credentialClient.getUid())) {
-				log.warn("WARN CREDENTIAL ALARMTILT UID -->{} ",
-						eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID));
+			if (!alertMessage.getUid().equals(credentialClient.getUid())) {
+				log.warn("WARN CREDENTIAL ALARMTILT UID -->{} ", alertMessage.getUid());
 				alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_2);
 			}
 			return alertMessage;

@@ -22,6 +22,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import net.alarmtilt.cle.alarmis.model.CredentialClient;
 import net.alarmtilt.cle.alarmis.model.ServiceConfig;
 
 /**
@@ -40,14 +41,28 @@ public class LoaderConfigurationImpl implements LoaderConfigurationService {
 	private String serviceConfigFileLink;
 
 	private ServiceConfig serviceConfig;
+	private CredentialClient currentCredentialClient;
 
 	public ServiceConfig getServiceConfig() {
 		return serviceConfig;
 	}
 
-	public void setServiceConfig(ServiceConfig serviceConfigList) {
-		this.serviceConfig = serviceConfigList;
+	public void setServiceConfig(ServiceConfig serviceConfig) {
+		this.serviceConfig = serviceConfig;
 	}
+	
+	
+
+	@Override
+	public CredentialClient getCurrentCredentialClient() {
+		return currentCredentialClient;
+	}
+
+	@Override
+	public void setCurrentCredentialClient(CredentialClient currentCredentialClient) {
+		this.currentCredentialClient = currentCredentialClient;
+	}
+	
 
 	@PostConstruct
 	public void loadServiceTable() throws IOException {
