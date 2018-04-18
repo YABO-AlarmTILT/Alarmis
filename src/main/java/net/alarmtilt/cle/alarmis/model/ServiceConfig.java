@@ -1,6 +1,6 @@
 package net.alarmtilt.cle.alarmis.model;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class ServiceConfig {
 
@@ -8,7 +8,7 @@ public class ServiceConfig {
 	Integer portService;
 	Integer timeOut;
 	String eclipsVersion;
-	ArrayList<CredentialClient> credentialClientlist = new ArrayList<>();
+	List<CredentialClient> credentialClientlist;
 	Integer nbrOfRetry;
 	public String getService() {
 		return service;
@@ -34,10 +34,10 @@ public class ServiceConfig {
 	public void setEclipsVersion(String eclipsVersion) {
 		this.eclipsVersion = eclipsVersion;
 	}
-	public ArrayList<CredentialClient> getCredentialClientlist() {
+	public List<CredentialClient> getCredentialClientlist() {
 		return credentialClientlist;
 	}
-	public void setCredentialClientlist(ArrayList<CredentialClient> credentialClientlist) {
+	public void setCredentialClientlist(List<CredentialClient> credentialClientlist) {
 		this.credentialClientlist = credentialClientlist;
 	}
 	public Integer getNbrOfRetry() {
@@ -105,7 +105,7 @@ public class ServiceConfig {
 				+ ", eclipsVersion=" + eclipsVersion + ", credentialClientlist=" + credentialClientlist
 				+ ", nbrOfRetry=" + nbrOfRetry + "]";
 	}
-	
-	
 
+	
+	
 }

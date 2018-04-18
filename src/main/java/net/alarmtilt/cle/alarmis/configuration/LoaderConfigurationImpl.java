@@ -1,11 +1,8 @@
 package net.alarmtilt.cle.alarmis.configuration;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import javax.annotation.PostConstruct;
 
@@ -24,7 +21,6 @@ import org.springframework.web.client.RestTemplate;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
 
 import net.alarmtilt.cle.alarmis.model.ServiceConfig;
 
@@ -35,7 +31,7 @@ import net.alarmtilt.cle.alarmis.model.ServiceConfig;
  *
  */
 @Service
-public class LoadConfigurationImpl implements LoaderConfigurationService {
+public class LoaderConfigurationImpl implements LoaderConfigurationService {
 
 	// Logger
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -43,19 +39,19 @@ public class LoadConfigurationImpl implements LoaderConfigurationService {
 	@Value("${service.configuration.file.link}")
 	private String serviceConfigFileLink;
 
-	private List<ServiceConfig> serviceConfigList;
+	private ServiceConfig serviceConfig;
 
-	public List<ServiceConfig> getServiceConfigList() {
-		return serviceConfigList;
+	public ServiceConfig getServiceConfig() {
+		return serviceConfig;
 	}
 
-	public void setServiceConfigList(List<ServiceConfig> serviceConfigList) {
-		this.serviceConfigList = serviceConfigList;
+	public void setServiceConfig(ServiceConfig serviceConfigList) {
+		this.serviceConfig = serviceConfigList;
 	}
 
 	@PostConstruct
 	public void loadServiceTable() throws IOException {
-		serviceConfigList = new ArrayList<>();
+		// serviceConfigList = new ArrayList<>();
 		logger.info("--> link of Routing file : {}", serviceConfigFileLink);
 		RestTemplate restTemplate = new RestTemplate();
 		HttpEntity<String> request = new HttpEntity<>(getHeaders(MediaType.APPLICATION_JSON));
@@ -73,12 +69,8 @@ public class LoadConfigurationImpl implements LoaderConfigurationService {
 		String decodedContent = this.base64Decode(encodedContent);
 
 		Gson gson = new Gson();
-		Type type = new TypeToken<List<ServiceConfig>>() {
-		}.getType();
-		this.setServiceConfigList(gson.fromJson(decodedContent, type));
-
-		for (ServiceConfig serviceConfig : this.serviceConfigList)
-			logger.info(serviceConfig.toString());
+		setServiceConfig( gson.fromJson(decodedContent, ServiceConfig.class));
+		logger.info(serviceConfig.toString());
 	}
 
 	/**
@@ -110,7 +102,7 @@ public class LoadConfigurationImpl implements LoaderConfigurationService {
 	public ServiceConfig getConfigOfService() {
 
 		ServiceConfig sc = new ServiceConfig();
-		sc = this.getServiceConfigList().get(0);
+		sc = this.getServiceConfig();
 
 		return sc;
 	}

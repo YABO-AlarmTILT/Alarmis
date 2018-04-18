@@ -6,6 +6,7 @@ import java.io.StringReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -29,8 +30,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import net.alarmtilt.cle.alarmis.configuration.Constants;
-import net.alarmtilt.cle.alarmis.configuration.LoaderConfigurationService;
+import net.alarmtilt.cle.alarmis.configuration.LoaderConfigurationImpl;
 import net.alarmtilt.cle.alarmis.model.AlertMessage;
+import net.alarmtilt.cle.alarmis.model.CredentialClient;
 import net.alarmtilt.cle.alarmis.model.GenericAlert;
 
 @Service
@@ -40,7 +42,8 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 	private static String filePath = "alarmisMsg";
 	private static String fileExtension = "xml";
 	@Autowired
-	private LoaderConfigurationService loaderConfigurationService;
+	private LoaderConfigurationImpl loaderConfigurationService;
+	private CredentialClient credentialClient;
 
 	/**
 	 * parse XML file and create object for message alert
@@ -64,7 +67,6 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 
 			InputSource is = new InputSource(new StringReader(xmlStr));
 			Document doc = dBuilder.parse(is);
-			
 
 			doc.getDocumentElement().normalize();
 
@@ -79,7 +81,6 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 
 					Element eElement = (Element) nNode;
-					alertMessage = checkCredentail(eElement, alertMessage);
 
 					// Set AlertMessage
 					alertMessage.setPwd(eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_MDP));
@@ -100,6 +101,7 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 							.getAttributes().getNamedItem(Constants.ALARMIS_ALERT_XML_ATTRIBUT_EVENT).getNodeValue());
 					// Set generic Alert
 					alertMessage.setGenericAlert(genericAlert);
+					alertMessage = checkCredentail(eElement, alertMessage);
 
 					if (alertMessage.getResponseMessage() == null) {
 						alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_ACCEPT);
@@ -126,30 +128,31 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 	}
 
 	private AlertMessage checkCredentail(Element eElement, AlertMessage alertMessage) {
+		credentialClient = getCredentialClient(eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID),
+				eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_MDP),
+				alertMessage.getGenericAlert().getAccount(), alertMessage.getGenericAlert().getZone(),
+				alertMessage.getGenericAlert().getEvent());
 
-		if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_MDP)
-				.equals(loaderConfigurationService.getConfigOfService().getCredentialClientlist().get(0).getPwd())) {
-			log.warn("WARN CREDENTIAL ALARMTILT PWD -->{} ",
-					eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_MDP));
-			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_3);
+		if (credentialClient != null) {
+			if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_MDP).equals(credentialClient.getPwd())) {
+				log.warn("WARN CREDENTIAL ALARMTILT PWD -->{} ",
+						eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_MDP));
+				alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_3);
+			}
+			if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID).equals(credentialClient.getUid())) {
+				log.warn("WARN CREDENTIAL ALARMTILT UID -->{} ",
+						eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID));
+				alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_2);
+			}
+			return alertMessage;
+		} else {
+			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_1);
+			log.warn("WARN CREDENTIAL NO MATCHED  ");
+			return alertMessage;
 		}
 
-		if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID)
-				.equals(loaderConfigurationService.getConfigOfService().getCredentialClientlist().get(0).getUid())) {
-			log.warn("WARN CREDENTIAL ALARMTILT UID -->{} ",
-					eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID));
-			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_2);
-		}
-		if (!eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID)
-				.equals(loaderConfigurationService.getConfigOfService().getCredentialClientlist().get(0).getUid())) {
-			log.warn("WARN CREDENTIAL ALARMTILT UID -->{} ",
-					eElement.getAttribute(Constants.ALARMIS_ALERT_XML_ATTRIBUT_UID));
-			alertMessage.setResponseMessage(Constants.ALARMIS_ALERT_XML_RESPONSE_REJECT_2);
-		}
-		return alertMessage;
 	}
 
-	
 	@SuppressWarnings("unused")
 	private static File convertStringToDocument(String xmlStr) throws Exception {
 
@@ -187,6 +190,53 @@ public class BuildObjetMessageFactoryImpl implements BuildObjetMessageFactorySer
 			throw new Exception("ERROR IN CONVERTING STRING TO FILE :{} ", e);
 
 		}
+
+	}
+
+	/**
+	 * return client credential current by :
+	 * 
+	 * @param uid
+	 * @param pwd
+	 * @param account
+	 * @param zone
+	 * @param event
+	 * @return
+	 */
+	private CredentialClient getCredentialClient(String uid, String pwd, Integer account, String zone, String event) {
+		List<CredentialClient> getCredentialClientlist = loaderConfigurationService.getConfigOfService()
+				.getCredentialClientlist();
+		for (CredentialClient credentialClient : getCredentialClientlist) {
+			// if account exist in rules table
+			if (credentialClient.getAccount() != null) {
+				if (uid.equals(credentialClient.getUid()) && pwd.equals(credentialClient.getPwd())
+						&& account.equals(credentialClient.getAccount())) {
+					log.warn("WARN CREDENTIAL ALARMTILT ACCOUNT -->{} ", credentialClient.getAccount());
+					return this.credentialClient = credentialClient;
+				}
+				// if zone exist in rules table
+			} else if (credentialClient.getZone() != null) {
+				if (uid.equals(credentialClient.getUid()) && pwd.equals(credentialClient.getPwd())
+						&& zone.equals(credentialClient.getZone())) {
+					return this.credentialClient = credentialClient;
+				}
+				// if event exist in rules table
+			} else if (credentialClient.getEvent() != null) {
+				if (uid.equals(credentialClient.getUid()) && pwd.equals(credentialClient.getPwd())
+						&& event.equals(credentialClient.getEvent())) {
+
+					return this.credentialClient = credentialClient;
+				}
+			} else {
+				//
+				if (uid.equals(credentialClient.getUid()) && pwd.equals(credentialClient.getPwd())) {
+					return this.credentialClient = credentialClient;
+				}
+
+			}
+
+		}
+		return null;
 
 	}
 
